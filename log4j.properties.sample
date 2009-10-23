@@ -1,0 +1,13 @@
+# Set the root logger to
+log4j.rootLogger=error, MongoDB
+
+# MongoDB appender classname
+log4j.appender.MongoDB=com.google.code.log4mongo.MongoDbAppender
+
+# MongoDB appender properties - all are optional - default values shown below (except for userName and password, which default to undefined)
+log4j.appender.MongoDB.hostname=localhost
+log4j.appender.MongoDB.port=27017
+log4j.appender.MongoDB.databaseName=log4mongo
+log4j.appender.MongoDB.collectionName=logevents
+log4j.appender.MongoDB.userName=open
+log4j.appender.MongoDB.password=sesame
