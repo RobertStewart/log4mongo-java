@@ -29,10 +29,11 @@ Installation / Configuration
 
 Todos
 -----
+* Confirm that dates are being written correctly.  They appear to be getting
+  converted to Strings (via Date.toString() - blech!!) before being written.
+
 * Clean up BSONification code - it's currently functional but inconsistent.
-  Might consider generic conversion code that uses reflection to convert any
-  POJO into a BSON equivalent?  Dozer [4] does something similar and may have
-  some ideas worth borrowing.
+  Consider using daybreak [4].
 
 
 References
@@ -40,4 +41,4 @@ References
 [1] http://logging.apache.org/log4j/1.2/index.html
 [2] http://www.mongodb.org/
 [3] http://github.com/mongodb/mongo-java-driver/downloads
-[4] http://dozer.sourceforge.net/
+[4] http://github.com/maxaf/daybreak
