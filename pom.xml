@@ -7,7 +7,34 @@
   <artifactId>log4mongo</artifactId>
   <packaging>jar</packaging>
   <name>Log4J Appender for MongoDB</name>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1</version>
+
+  <licenses>
+    <license>
+      <name>GPL v3</name>
+      <url>http://www.gnu.org/licenses/gpl.html</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>pmonks</id>
+      <name>Peter Monks</name>
+      <email>pmonks@gmail.com</email>
+    </developer>
+  </developers>
+
+  <issueManagement>
+    <system>Google Code</system>
+    <url>http://code.google.com/p/log4mongo/issues/list</url>
+  </issueManagement>
+
+  <scm>
+    <connection>scm:svn:http://log4mongo.googlecode.com/svn/trunk/</connection>
+    <developerConnection>scm:svn:https://log4mongo.googlecode.com/svn/trunk/</developerConnection>
+    <tag>HEAD</tag>
+    <url>http://code.google.com/p/log4mongo/source/browse/</url>
+  </scm>
 
   <dependencies>
     <dependency>
