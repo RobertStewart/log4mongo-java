@@ -29,7 +29,7 @@ import junit.framework.TestCase;
 
 
 /**
- * ####TODO: Add description
+ * JUnit unit tests for MongoDbAppender.
  *
  * @author Peter Monks (peter.monks@alfresco.com)
  * @version $Id$
