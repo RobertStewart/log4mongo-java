@@ -30,6 +30,9 @@ import junit.framework.TestCase;
 
 /**
  * JUnit unit tests for MongoDbAppender.
+ * 
+ * Note: these tests require that a MongoDB server is running, and (by default)
+ * assumes that server is listening on the default port (27017) on localhost.
  *
  * @author Peter Monks (peter.monks@alfresco.com)
  * @version $Id$
@@ -151,6 +154,12 @@ public class TestMongoDbAppender
         {
             mongo.getDB(TEST_DATABASE_NAME).requestDone();
         }
+    }
+    
+    
+    public void testAuthentication()
+    {
+        //####TODO!!!!
     }
     
     

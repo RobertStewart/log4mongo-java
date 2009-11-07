@@ -60,7 +60,7 @@
     <dependency>
       <groupId>com.mongodb</groupId>
       <artifactId>mongo-java-driver</artifactId>
-      <version>0.11</version>
+      <version>1.0</version>
     </dependency>
   </dependencies>
 
