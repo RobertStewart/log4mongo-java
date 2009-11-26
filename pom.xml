@@ -58,7 +58,17 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.mongodb</groupId>
+        <!-- Available from:
+
+               http://github.com/mongodb/mongo-java-driver/downloads
+
+             After downloading the JAR, install into your local Maven repo using:
+
+               mvn install:install-file -DgroupId=org.mongodb -DartifactId=mongo-java-driver -Dversion=1.0 -Dpackaging=jar -Dfile=/path/to/mongo-1.0.jar 
+
+             v1.0 been submitted to Maven central, but may not be available yet - watch http://jira.mongodb.org/browse/JAVA-56 for status updates.
+      -->
+      <groupId>org.mongodb</groupId>
       <artifactId>mongo-java-driver</artifactId>
       <version>1.0</version>
     </dependency>
