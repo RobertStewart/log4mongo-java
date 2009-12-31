@@ -106,7 +106,7 @@ import com.mongodb.DBObject;
  * }
  * </pre>
  *
- * @author Peter Monks (peter.monks@alfresco.com)
+ * @author Peter Monks (pmonks@gmail.com)
  * @see http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html
  * @see http://www.mongodb.org/
  * @version $Id$

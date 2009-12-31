@@ -34,7 +34,7 @@ import junit.framework.TestCase;
  * Note: these tests require that a MongoDB server is running, and (by default)
  * assumes that server is listening on the default port (27017) on localhost.
  *
- * @author Peter Monks (peter.monks@alfresco.com)
+ * @author Peter Monks (pmonks@gmail.com)
  * @version $Id$
  */
 public class TestMongoDbAppender
@@ -46,6 +46,8 @@ public class TestMongoDbAppender
     private final static int    TEST_MONGO_SERVER_PORT     = 27017;
     private final static String TEST_DATABASE_NAME         = "log4mongotest";
     private final static String TEST_COLLECTION_NAME       = "logevents";
+    
+    private final static int SLEEP_FOR_WRITES_IN_MS = 1000;
     
     private final Mongo mongo;
 
@@ -72,12 +74,16 @@ public class TestMongoDbAppender
     
     
     public void testSingleLogEntry()
+        throws Exception
     {
         try
         {
             mongo.getDB(TEST_DATABASE_NAME).requestStart();
             
             log.trace("Trace entry");
+            
+            Thread.sleep(SLEEP_FOR_WRITES_IN_MS);
+            
             assertEquals(1L, countLogEntries());
             assertEquals(1L, countLogEntriesAtLevel("trace"));
             assertEquals(0L, countLogEntriesAtLevel("debug"));
@@ -94,6 +100,7 @@ public class TestMongoDbAppender
 
 
     public void testAllLevels()
+        throws Exception
     {
         try
         {
@@ -105,6 +112,8 @@ public class TestMongoDbAppender
             log.warn("Warn entry");
             log.error("Error entry");
             log.fatal("Fatal entry");
+            
+            Thread.sleep(SLEEP_FOR_WRITES_IN_MS);
             
             assertEquals(6L, countLogEntries());
             assertEquals(1L, countLogEntriesAtLevel("trace"));
@@ -122,12 +131,15 @@ public class TestMongoDbAppender
     
     
     public void testLogWithException()
+        throws Exception
     {
         try
         {
             mongo.getDB(TEST_DATABASE_NAME).requestStart();
             
             log.error("Error entry", new RuntimeException("Here is an exception!"));
+            
+            Thread.sleep(SLEEP_FOR_WRITES_IN_MS);
             
             assertEquals(1L, countLogEntries());
         }
@@ -139,6 +151,7 @@ public class TestMongoDbAppender
     
     
     public void testLogWithChainedExceptions()
+        throws Exception
     {
         try
         {
@@ -147,6 +160,8 @@ public class TestMongoDbAppender
             Exception rootCause = new RuntimeException("I'm the real culprit!");
             
             log.error("Error entry", new RuntimeException("I'm an innocent bystander.", rootCause));
+            
+            Thread.sleep(SLEEP_FOR_WRITES_IN_MS);
             
             assertEquals(1L, countLogEntries());
         }
