@@ -21,15 +21,17 @@ Log4J 1.2+ (tested with 1.2.15 - note: won't work on earlier versions due to
 Installation / Configuration
 ----------------------------
 1. Start a local MongoDB server running on the default port - this is required
-   for the unit tests
+   for the unit tests:
+       mongod -dbpath ./mongodata
 
-2. Build the JAR file using Maven2 ("mvn clean package")
+2. Build the JAR file using Maven2
+       mvn clean package
 
-3. Deploy the produced JAR file, along with the MongoDB Java Driver JAR, into
-   the classpath of your Java application
+3. Deploy the target/log4mongo-x.y.jar file, along with the Log4J and MongoDB
+   Java Driver JARs, into the classpath of your Java application
 
 4. Configure log4j as usual, referring to the log4j.properties.sample file for
-   the specific properties of this appender
+   the specific configuration properties this appender supports
 
 
 Todos
