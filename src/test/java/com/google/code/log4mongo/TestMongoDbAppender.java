@@ -47,16 +47,18 @@ public class TestMongoDbAppender
     private final static String TEST_DATABASE_NAME         = "log4mongotest";
     private final static String TEST_COLLECTION_NAME       = "logevents";
     
-    private final static int SLEEP_FOR_WRITES_IN_MS = 1000;
+    private final static String MONGODB_APPENDER_NAME = "MongoDB";
     
-    private final Mongo mongo;
+    private final Mongo           mongo;
+    private final MongoDbAppender appender;
 
     
     
     public TestMongoDbAppender()
         throws Exception
     {
-        mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        mongo    = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        appender = (MongoDbAppender)log.getRootLogger().getAppender(MONGODB_APPENDER_NAME);
     }
     
 
@@ -70,105 +72,78 @@ public class TestMongoDbAppender
         super.setUp();
             
         mongo.dropDatabase(TEST_DATABASE_NAME);
+
+        // Ensure both the appender and the JUnit test use the same collection object - provides consistency across reads (JUnit) & writes (Log4J)
+        appender.setCollection(mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME));
+
+        mongo.getDB(TEST_DATABASE_NAME).requestStart();
     }
     
     
+    /**
+     * @see junit.framework.TestCase#tearDown()
+     */
+    @Override
+    protected void tearDown()
+        throws Exception
+    {
+        super.tearDown();
+        mongo.getDB(TEST_DATABASE_NAME).requestDone();
+    }
+
+
     public void testSingleLogEntry()
         throws Exception
     {
-        try
-        {
-            mongo.getDB(TEST_DATABASE_NAME).requestStart();
-            
-            log.trace("Trace entry");
-            
-            Thread.sleep(SLEEP_FOR_WRITES_IN_MS);
-            
-            assertEquals(1L, countLogEntries());
-            assertEquals(1L, countLogEntriesAtLevel("trace"));
-            assertEquals(0L, countLogEntriesAtLevel("debug"));
-            assertEquals(0L, countLogEntriesAtLevel("info"));
-            assertEquals(0L, countLogEntriesAtLevel("warn"));
-            assertEquals(0L, countLogEntriesAtLevel("error"));
-            assertEquals(0L, countLogEntriesAtLevel("fatal"));
-        }
-        finally
-        {
-            mongo.getDB(TEST_DATABASE_NAME).requestDone();
-        }
+        log.trace("Trace entry");
+        
+        assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("trace"));
+        assertEquals(0L, countLogEntriesAtLevel("debug"));
+        assertEquals(0L, countLogEntriesAtLevel("info"));
+        assertEquals(0L, countLogEntriesAtLevel("warn"));
+        assertEquals(0L, countLogEntriesAtLevel("error"));
+        assertEquals(0L, countLogEntriesAtLevel("fatal"));
     }
 
 
     public void testAllLevels()
         throws Exception
     {
-        try
-        {
-            mongo.getDB(TEST_DATABASE_NAME).requestStart();
-            
-            log.trace("Trace entry");
-            log.debug("Debug entry");
-            log.info("Info entry");
-            log.warn("Warn entry");
-            log.error("Error entry");
-            log.fatal("Fatal entry");
-            
-            Thread.sleep(SLEEP_FOR_WRITES_IN_MS);
-            
-            assertEquals(6L, countLogEntries());
-            assertEquals(1L, countLogEntriesAtLevel("trace"));
-            assertEquals(1L, countLogEntriesAtLevel("debug"));
-            assertEquals(1L, countLogEntriesAtLevel("info"));
-            assertEquals(1L, countLogEntriesAtLevel("warn"));
-            assertEquals(1L, countLogEntriesAtLevel("error"));
-            assertEquals(1L, countLogEntriesAtLevel("fatal"));
-        }
-        finally
-        {
-            mongo.getDB(TEST_DATABASE_NAME).requestDone();
-        }
+        log.trace("Trace entry");
+        log.debug("Debug entry");
+        log.info("Info entry");
+        log.warn("Warn entry");
+        log.error("Error entry");
+        log.fatal("Fatal entry");
+        
+        assertEquals(6L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("trace"));
+        assertEquals(1L, countLogEntriesAtLevel("debug"));
+        assertEquals(1L, countLogEntriesAtLevel("info"));
+        assertEquals(1L, countLogEntriesAtLevel("warn"));
+        assertEquals(1L, countLogEntriesAtLevel("error"));
+        assertEquals(1L, countLogEntriesAtLevel("fatal"));
     }
     
     
     public void testLogWithException()
         throws Exception
     {
-        try
-        {
-            mongo.getDB(TEST_DATABASE_NAME).requestStart();
+        log.error("Error entry", new RuntimeException("Here is an exception!"));
             
-            log.error("Error entry", new RuntimeException("Here is an exception!"));
-            
-            Thread.sleep(SLEEP_FOR_WRITES_IN_MS);
-            
-            assertEquals(1L, countLogEntries());
-        }
-        finally
-        {
-            mongo.getDB(TEST_DATABASE_NAME).requestDone();
-        }
+        assertEquals(1L, countLogEntries());
     }
     
     
     public void testLogWithChainedExceptions()
         throws Exception
     {
-        try
-        {
-            mongo.getDB(TEST_DATABASE_NAME).requestStart();
-            
-            Exception rootCause = new RuntimeException("I'm the real culprit!");
-            
-            log.error("Error entry", new RuntimeException("I'm an innocent bystander.", rootCause));
-            
-            Thread.sleep(SLEEP_FOR_WRITES_IN_MS);
-            
-            assertEquals(1L, countLogEntries());
-        }
-        finally
-        {
-            mongo.getDB(TEST_DATABASE_NAME).requestDone();
-        }
+        Exception rootCause = new RuntimeException("I'm the real culprit!");
+        
+        log.error("Error entry", new RuntimeException("I'm an innocent bystander.", rootCause));
+        
+        assertEquals(1L, countLogEntries());
     }
     
     

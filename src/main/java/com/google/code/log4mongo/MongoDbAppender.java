@@ -160,7 +160,7 @@ public class MongoDbAppender
                 password = null;
             }
             
-            collection = database.getCollection(collectionName);
+            setCollection(database.getCollection(collectionName));
         }
         catch (Exception e)
         {
@@ -181,6 +181,21 @@ public class MongoDbAppender
         {
             collection.insert(bson);
         }
+    }
+    
+    
+    /**
+     * Note: this method is primarily intended for use by the unit tests.
+     * 
+     * @param collection The MongoDB collection to use when logging events.
+     */
+    public void setCollection(final DBCollection collection)
+    {
+        // PRECONDITIONS
+        assert collection != null : "collection must not be null.";
+        
+        // Body
+        this.collection = collection;
     }
     
     

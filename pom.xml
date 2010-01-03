@@ -7,7 +7,7 @@
   <artifactId>log4mongo</artifactId>
   <packaging>jar</packaging>
   <name>Log4J Appender for MongoDB</name>
-  <version>0.1</version>
+  <version>0.2</version>
 
   <licenses>
     <license>
