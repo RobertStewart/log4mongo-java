@@ -12,8 +12,8 @@ Peter Monks (pmonks@gmail.com)
 Pre-requisites
 --------------
 JDK 1.6+
-MongoDB Server v1.0+ (tested with 1.2.1) (required for unit tests)
-MongoDB Java Driver v1.0+ (tested with 1.2)
+MongoDB Server v1.0+ (tested with 1.2.1, 1.4.x) (required for unit tests)
+MongoDB Java Driver v1.0+ (tested with 1.2, 1.4)
 Log4J 1.2+ (tested with 1.2.15 - note: won't work on earlier versions due to
             log4j API changes)
 
@@ -36,17 +36,22 @@ Installation / Configuration
 
 Todos
 -----
-* Confirm that dates are being written correctly.  They appear to be getting
-  converted to Strings (via Date.toString() - blech!!) before being written.
-
+* Add unit tests
+  * authentication
+  
 * Clean up BSONification code - currently it's functional but skanky.
   Consider using daybreak for this [4].
 
-* Add unit tests
-  * test contents of logged events, not just document counts
-  * authentication
-  * exceptions (including nested exceptions) are stored correctly
-
+  
+Notes on Date handling
+-----
+MongoDB (actually BSON) supports datetimes as a native data type [5] 
+and all drivers are supposed to handle conversion from client-native 
+date type (java.util.Date in Java) to BSON representation of date in miliseconds
+since the Unix epoch. 
+However, MongoDB built-in console (bin/mongo) does represent dates formatted,
+even the dates were saved in native data type, which may be confusing [6].
+See testTimestampStoredNatively in tests (TestMongoDbAppender.java) if you want to get an idea.
 
 References
 ----------
@@ -54,3 +59,5 @@ References
 [2] http://www.mongodb.org/
 [3] http://github.com/mongodb/mongo-java-driver/downloads
 [4] http://github.com/maxaf/daybreak
+[5] http://bsonspec.org/#/specification
+[6] http://groups.google.com/group/mongodb-user/browse_thread/thread/e59cbc8c9ba30411/af061b4bdbce5287

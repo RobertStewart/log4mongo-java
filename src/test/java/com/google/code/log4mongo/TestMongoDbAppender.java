@@ -21,8 +21,10 @@ package com.google.code.log4mongo;
 import org.apache.log4j.Logger;
 
 import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.BasicDBList;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
 
 import junit.framework.TestCase;
@@ -51,7 +53,7 @@ public class TestMongoDbAppender
     
     private final Mongo           mongo;
     private final MongoDbAppender appender;
-
+    private DBCollection    collection;
     
     
     public TestMongoDbAppender()
@@ -74,7 +76,8 @@ public class TestMongoDbAppender
         mongo.dropDatabase(TEST_DATABASE_NAME);
 
         // Ensure both the appender and the JUnit test use the same collection object - provides consistency across reads (JUnit) & writes (Log4J)
-        appender.setCollection(mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME));
+        collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        appender.setCollection(collection);
 
         mongo.getDB(TEST_DATABASE_NAME).requestStart();
     }
@@ -88,6 +91,8 @@ public class TestMongoDbAppender
         throws Exception
     {
         super.tearDown();
+        // not really sure if this is the 'right way', however point is to proper cleanup database after test(s)
+        mongo.dropDatabase(TEST_DATABASE_NAME);
         mongo.getDB(TEST_DATABASE_NAME).requestDone();
     }
 
@@ -104,6 +109,26 @@ public class TestMongoDbAppender
         assertEquals(0L, countLogEntriesAtLevel("warn"));
         assertEquals(0L, countLogEntriesAtLevel("error"));
         assertEquals(0L, countLogEntriesAtLevel("fatal"));
+        
+        // verify log entry content
+        DBObject entry = collection.findOne();
+        assertNotNull(entry);
+        assertEquals("TRACE", entry.get("level"));
+        assertEquals("Trace entry", entry.get("message"));
+    }
+    
+    public void testTimestampStoredNatively()
+    	throws Exception
+    {
+    	log.debug("Debug entry");
+    	
+    	assertEquals(1L, countLogEntries());
+    	
+    	// verify timestamp - presence and data type
+        DBObject entry = collection.findOne();
+        assertNotNull(entry);
+        assertTrue("Timestamp is not present in logged entry", entry.containsField("timestamp"));
+        assertTrue("Timestamp of logged entry is not stored as native date", (entry.get("timestamp") instanceof java.util.Date));
     }
 
 
@@ -133,6 +158,22 @@ public class TestMongoDbAppender
         log.error("Error entry", new RuntimeException("Here is an exception!"));
             
         assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("error"));
+        
+        // verify log entry content
+        DBObject entry = collection.findOne();
+        assertNotNull(entry);
+        assertEquals("ERROR", entry.get("level"));
+        assertEquals("Error entry", entry.get("message"));
+        
+        // verify throwable presence and content
+        assertTrue("Throwable is not present in logged entry", entry.containsField("throwables"));
+        BasicDBList throwables = (BasicDBList)entry.get("throwables");
+        assertEquals(1, throwables.size());
+        
+        DBObject throwableEntry = (DBObject)throwables.get("0");
+        assertTrue("Throwable message is not present in logged entry", throwableEntry.containsField("message"));
+        assertEquals("Here is an exception!", throwableEntry.get("message"));
     }
     
     
@@ -144,6 +185,26 @@ public class TestMongoDbAppender
         log.error("Error entry", new RuntimeException("I'm an innocent bystander.", rootCause));
         
         assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("error"));
+        
+        // verify log entry content
+        DBObject entry = collection.findOne();
+        assertNotNull(entry);
+        assertEquals("ERROR", entry.get("level"));
+        assertEquals("Error entry", entry.get("message"));
+        
+        // verify throwable presence and content
+        assertTrue("Throwable is not present in logged entry", entry.containsField("throwables"));
+        BasicDBList throwables = (BasicDBList)entry.get("throwables");
+        assertEquals(2, throwables.size());
+        
+        DBObject rootEntry = (DBObject)throwables.get("0");                 
+        assertTrue("Throwable message is not present in logged entry", rootEntry.containsField("message"));
+        assertEquals("I'm an innocent bystander.", rootEntry.get("message"));
+        
+        DBObject chainedEntry = (DBObject)throwables.get("1");                 
+        assertTrue("Throwable message is not present in logged entry", chainedEntry.containsField("message"));
+        assertEquals("I'm the real culprit!", chainedEntry.get("message"));
     }
     
     
@@ -155,21 +216,16 @@ public class TestMongoDbAppender
     
     private long countLogEntries()
     {
-        return(mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME).getCount());
+        return(collection.getCount());
     }
-    
     
     private long countLogEntriesAtLevel(final String level)
     {
         return(countLogEntriesWhere(BasicDBObjectBuilder.start().add("level", level.toUpperCase()).get()));
     }
     
-    
     private long countLogEntriesWhere(final DBObject whereClause)
     {
-        DBCursor cursor = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME).find(whereClause);
-        
-        return(cursor.count());
+    	return collection.getCount(whereClause);
     }
-
 }

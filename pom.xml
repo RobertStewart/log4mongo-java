@@ -7,7 +7,7 @@
   <artifactId>log4mongo</artifactId>
   <packaging>jar</packaging>
   <name>Log4J Appender for MongoDB</name>
-  <version>0.2</version>
+  <version>0.3</version>
 
   <licenses>
     <license>
@@ -60,7 +60,7 @@
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongo-java-driver</artifactId>
-      <version>1.2</version>
+      <version>1.4</version>
     </dependency>
   </dependencies>
 
