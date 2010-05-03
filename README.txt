@@ -8,6 +8,10 @@ Author
 ------
 Peter Monks (pmonks@gmail.com)
 
+Contributors
+------
+Jozef Sevcik (sevcik@styxys.com)
+
 
 Pre-requisites
 --------------
