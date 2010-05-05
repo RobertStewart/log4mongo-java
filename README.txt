@@ -31,7 +31,7 @@ Installation / Configuration
 2. Build the JAR file using Maven2
        mvn clean package
 
-3. Deploy the target/log4mongo-x.y.jar file, along with the Log4J and MongoDB
+3. Deploy the target/log4mongo-java-x.y.jar file, along with the Log4J and MongoDB
    Java Driver JARs, into the classpath of your Java application
 
 4. Configure log4j as usual, referring to the log4j.properties.sample file for
