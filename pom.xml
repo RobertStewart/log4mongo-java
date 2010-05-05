@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.code</groupId>
-  <artifactId>log4mongo</artifactId>
+  <artifactId>log4mongo-java</artifactId>
   <packaging>jar</packaging>
   <name>Log4J Appender for MongoDB</name>
   <version>0.3</version>
@@ -21,6 +21,11 @@
       <id>pmonks</id>
       <name>Peter Monks</name>
       <email>pmonks@gmail.com</email>
+    </developer>
+    <developer>
+      <id>jsk</id>
+      <name>Jozef Sevcik</name>
+      <email>sevcik@styxys.com</email>
     </developer>
   </developers>
 
