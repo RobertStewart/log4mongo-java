@@ -435,7 +435,7 @@ public class MongoDbAppender
     /**
      * @param hostname The MongoDB hostname to set <i>(must not be null, empty or blank)</i>.
      */
-    private void setHostname(final String hostname)
+    public void setHostname(final String hostname)
     {
         // PRECONDITIONS
         assert hostname != null             : "hostname must not be null";
@@ -458,7 +458,7 @@ public class MongoDbAppender
     /**
      * @param port The port to set <i>(must be > 0)</i>.
      */
-    private void setPort(final int port)
+    public void setPort(final int port)
     {
         // PRECONDITIONS
         assert port > 0 : "port must be > 0";
@@ -530,7 +530,7 @@ public class MongoDbAppender
     {
         this.userName = userName;
     }
-
+    
 
     /**
      * @param password The password to use when authenticating with MongoDB <i>(may be null)</i>.
