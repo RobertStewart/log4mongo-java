@@ -124,7 +124,7 @@ public class MongoDbAppender
     private String databaseName   = DEFAULT_MONGO_DB_DATABASE_NAME;
     private String collectionName = DEFAULT_MONGO_DB_COLLECTION_NAME;
     private String userName       = null;
-    private char[] password       = null;
+    private String password       = null;
     
     private DBCollection collection = null;
     
@@ -151,7 +151,7 @@ public class MongoDbAppender
             
             if (userName != null && userName.trim().length() > 0)
             {
-                if (!database.authenticate(userName, password))
+                if (!database.authenticate(userName, password.toCharArray()))
                 {
                     throw new RuntimeException("Unable to authenticate with MongoDB server.");
                 }
@@ -535,7 +535,7 @@ public class MongoDbAppender
     /**
      * @param password The password to use when authenticating with MongoDB <i>(may be null)</i>.
      */
-    public void setPassword(final char[] password)
+    public void setPassword(final String password)
     {
         this.password = password;
     }
