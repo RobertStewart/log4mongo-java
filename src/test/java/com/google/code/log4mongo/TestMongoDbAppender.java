@@ -18,9 +18,14 @@
 
 package com.google.code.log4mongo;
 
-import junit.framework.TestCase;
-
+import static org.junit.Assert.*;
 import org.apache.log4j.Logger;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObjectBuilder;
@@ -39,7 +44,6 @@ import com.mongodb.Mongo;
  * @version $Id$
  */
 public class TestMongoDbAppender
-    extends TestCase
 {
     private final static Logger log = Logger.getLogger(TestMongoDbAppender.class);
     
@@ -62,40 +66,43 @@ public class TestMongoDbAppender
         appender = (MongoDbAppender)Logger.getRootLogger().getAppender(MONGODB_APPENDER_NAME);
     }
     
+    
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+      Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+      mongo.dropDatabase(TEST_DATABASE_NAME);
+    }
+    
+    
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+      Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+      mongo.dropDatabase(TEST_DATABASE_NAME);
+    }
 
-    /**
-     * @see junit.framework.TestCase#setUp()
-     */
-    @Override
-    protected void setUp()
+    
+    @Before
+    public void setUp()
         throws Exception
     {
-        super.setUp();
-            
-        mongo.dropDatabase(TEST_DATABASE_NAME);
-
         // Ensure both the appender and the JUnit test use the same collection object - provides consistency across reads (JUnit) & writes (Log4J)
         collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        collection.drop();
         appender.setCollection(collection);
 
         mongo.getDB(TEST_DATABASE_NAME).requestStart();
     }
     
     
-    /**
-     * @see junit.framework.TestCase#tearDown()
-     */
-    @Override
-    protected void tearDown()
+    @After
+    public void tearDown()
         throws Exception
     {
-        super.tearDown();
-        // not really sure if this is the 'right way', however point is to proper cleanup database after test(s)
-        mongo.dropDatabase(TEST_DATABASE_NAME);
         mongo.getDB(TEST_DATABASE_NAME).requestDone();
     }
 
 
+    @Test
     public void testSingleLogEntry()
         throws Exception
     {
@@ -116,6 +123,8 @@ public class TestMongoDbAppender
         assertEquals("Trace entry", entry.get("message"));
     }
     
+    
+    @Test
     public void testTimestampStoredNatively()
     	throws Exception
     {
@@ -131,6 +140,7 @@ public class TestMongoDbAppender
     }
 
 
+    @Test
     public void testAllLevels()
         throws Exception
     {
@@ -151,6 +161,7 @@ public class TestMongoDbAppender
     }
     
     
+    @Test
     public void testLogWithException()
         throws Exception
     {
@@ -176,6 +187,7 @@ public class TestMongoDbAppender
     }
     
     
+    @Test
     public void testLogWithChainedExceptions()
         throws Exception
     {
@@ -207,6 +219,8 @@ public class TestMongoDbAppender
     }
     
     
+    @Test
+    @Ignore
     public void testAuthentication()
     {
         //####TODO!!!!
