@@ -18,16 +18,15 @@
 
 package com.google.code.log4mongo;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.BasicDBList;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 import com.mongodb.Mongo;
-
-import junit.framework.TestCase;
 
 
 /**
@@ -60,7 +59,7 @@ public class TestMongoDbAppender
         throws Exception
     {
         mongo    = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
-        appender = (MongoDbAppender)log.getRootLogger().getAppender(MONGODB_APPENDER_NAME);
+        appender = (MongoDbAppender)Logger.getRootLogger().getAppender(MONGODB_APPENDER_NAME);
     }
     
 
