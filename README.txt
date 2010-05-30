@@ -11,6 +11,7 @@ Peter Monks (pmonks@gmail.com)
 Contributors
 ------
 Jozef Sevcik (sevcik@styxys.com)
+Robert Stewart (robert@wombatnation.com)
 
 
 Pre-requisites
