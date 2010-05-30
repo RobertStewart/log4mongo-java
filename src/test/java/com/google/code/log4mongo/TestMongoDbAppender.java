@@ -18,13 +18,15 @@
 
 package com.google.code.log4mongo;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.mongodb.BasicDBList;
@@ -216,14 +218,6 @@ public class TestMongoDbAppender
         DBObject chainedEntry = (DBObject)throwables.get("1");                 
         assertTrue("Throwable message is not present in logged entry", chainedEntry.containsField("message"));
         assertEquals("I'm the real culprit!", chainedEntry.get("message"));
-    }
-    
-    
-    @Test
-    @Ignore
-    public void testAuthentication()
-    {
-        //####TODO!!!!
     }
     
     
