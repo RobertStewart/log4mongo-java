@@ -2,7 +2,7 @@
 # Standard maven2 repository
 repositories.remote << 'http://www.ibiblio.org/maven2'
 # Version number for this release
-VERSION_NUMBER = `git describe`.strip
+VERSION_NUMBER = `git describe --tags`.strip
 
 desc 'Log4J Appender for MongoDB'
 define 'log4mongo-java' do
