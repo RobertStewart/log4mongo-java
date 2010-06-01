@@ -35,10 +35,9 @@
   </issueManagement>
 
   <scm>
-    <connection>scm:svn:http://log4mongo.googlecode.com/svn/trunk/</connection>
-    <developerConnection>scm:svn:https://log4mongo.googlecode.com/svn/trunk/</developerConnection>
-    <tag>HEAD</tag>
-    <url>http://code.google.com/p/log4mongo/source/browse/</url>
+    <connection>scm:git:git://github.com/jsk/log4mongo-java.git</connection>
+    <developerConnection>scm:git:git://github.com/jsk/log4mongo-java.git</developerConnection>
+    <url>http://github.com/jsk/log4mongo-java</url>
   </scm>
 
   <dependencies>
