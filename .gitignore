@@ -1,2 +1,5 @@
 reports
 target
+*.iml
+*.ipr
+*.iws
