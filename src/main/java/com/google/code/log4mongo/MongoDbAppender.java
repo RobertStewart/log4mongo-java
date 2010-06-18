@@ -29,11 +29,12 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.Mongo;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
-import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.Mongo;
+import com.mongodb.util.JSON;
 
 
 /**
@@ -127,14 +128,18 @@ public class MongoDbAppender
     private String password       = null;
     
     private DBCollection collection = null;
-    
+    private String loggingStyle = null;
+    private Style style = null;
 
     /**
+     * Although a layout is not required, this method returns true so that a layout
+     * will be used if one is specified.
+     * 
      * @see org.apache.log4j.Appender#requiresLayout()
      */
     public boolean requiresLayout()
     {
-        return(false);
+        return(true);
     }
 
  
@@ -161,6 +166,9 @@ public class MongoDbAppender
             }
             
             setCollection(database.getCollection(collectionName));
+            
+            // Converts the String style specified in the properties to an enum
+            style = Style.get(getLoggingStyle());
         }
         catch (Exception e)
         {
@@ -175,12 +183,14 @@ public class MongoDbAppender
     @Override
     protected void append(final LoggingEvent loggingEvent)
     {
-        DBObject bson = bsonifyLoggingEvent(loggingEvent);
-        
-        if (bson != null)
-        {
-            collection.insert(bson);
-        }
+	switch (style) {
+	    case LOGGING_EVENT:
+		appendLoggingEventStyle(loggingEvent);
+		break;
+	    case PATTTERN_LAYOUT:
+		appendPatternLayoutStyle(loggingEvent);
+		break;
+	}
     }
     
     
@@ -540,5 +550,78 @@ public class MongoDbAppender
         this.password = password;
     }
     
+    
+    /**
+     * The supported logging styles are:
+     * <ul>
+     *   <li>LoggingEvent - The entire LoggingEvent is serialized as a BSON document</li>
+     *   <li>PatternLayout - The PatternLayout specified in the Log4J properties is used to construct the BSON document</li>
+     * </ul>
+     * <p>
+     * The PatternLayout style allows the inclusion of custom data via a custom PatternParser and PatternConverters.
+     * 
+     * @return The style of logging that will be used.
+     */
+    public String getLoggingStyle()
+    {
+        return(loggingStyle);
+    }
 
+    /**
+     * @param loggingStyle The style of logging that will be used.
+     */
+    public void setLoggingStyle(final String loggingStyle)
+    {
+        this.loggingStyle = loggingStyle;
+    }
+    
+    private void appendLoggingEventStyle(final LoggingEvent loggingEvent)
+    {
+        DBObject bson = bsonifyLoggingEvent(loggingEvent);
+        
+        if (bson != null)
+        {
+            collection.insert(bson);
+        }
+    }
+    
+    private void appendPatternLayoutStyle(final LoggingEvent loggingEvent)
+    {
+	DBObject bson = null;
+	String json = layout.format(loggingEvent);
+	
+	if (json.length() > 0)
+	{
+	    Object obj = JSON.parse(json);
+	    if (obj instanceof DBObject)
+	    {
+		bson = (DBObject)obj;
+	    }
+	}
+
+	if (bson != null)
+	{
+	    collection.insert(bson);
+	}
+    }
+
+    private enum Style {
+	LOGGING_EVENT("LoggingEvent"),
+	PATTTERN_LAYOUT("PatternLayout");
+	
+	private final String loggingStyle;
+	
+	private Style(String loggingStyle) {
+	    this.loggingStyle = loggingStyle;
+	}
+	
+	public static Style get(String loggingStyle) {
+	    for(Style s: Style.class.getEnumConstants()) {
+	      if(loggingStyle.equalsIgnoreCase(s.loggingStyle)) {
+	        return s;
+	      }
+	    }
+	    throw new RuntimeException("Invalid MongoDbAppender logging style: " + loggingStyle);
+	}
+    }
 }
