@@ -16,7 +16,7 @@ import com.mongodb.Mongo;
  * 
  * Note: these tests require that a MongoDB server is running, and (by default)
  * assumes that server is listening on the default port (27017) on localhost.
- *
+ * 
  * @author Robert Stewart (robert@wombatnation.com)
  * @version $Id$
  */
@@ -29,7 +29,7 @@ public class TestMongoDbAppenderAuth
     private final static String TEST_COLLECTION_NAME = "logevents";
 
     private final static String LOG4J_AUTH_PROPS = "src/test/resources/log4j_auth.properties";
-    
+
     private final static String username = "open";
     private final static String password = "sesame";
 
@@ -38,42 +38,42 @@ public class TestMongoDbAppenderAuth
 
     public TestMongoDbAppenderAuth() throws Exception
     {
-	mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
     }
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception
     {
-	Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME,
-		TEST_MONGO_SERVER_PORT);
-	mongo.dropDatabase(TEST_DATABASE_NAME);
+        Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME,
+                TEST_MONGO_SERVER_PORT);
+        mongo.dropDatabase(TEST_DATABASE_NAME);
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception
     {
-	Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME,
-		TEST_MONGO_SERVER_PORT);
-	mongo.dropDatabase(TEST_DATABASE_NAME);
+        Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME,
+                TEST_MONGO_SERVER_PORT);
+        mongo.dropDatabase(TEST_DATABASE_NAME);
     }
 
     @Before
     public void setUp() throws Exception
     {
-	// Ensure both the appender and the JUnit test use the same
-	// collection object - provides consistency across reads (JUnit) &
-	// writes (Log4J)
-	collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(
-		TEST_COLLECTION_NAME);
-	collection.drop();
+        // Ensure both the appender and the JUnit test use the same
+        // collection object - provides consistency across reads (JUnit) &
+        // writes (Log4J)
+        collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(
+                TEST_COLLECTION_NAME);
+        collection.drop();
 
-	mongo.getDB(TEST_DATABASE_NAME).requestStart();
+        mongo.getDB(TEST_DATABASE_NAME).requestStart();
     }
 
     @After
     public void tearDown() throws Exception
     {
-	mongo.getDB(TEST_DATABASE_NAME).requestDone();
+        mongo.getDB(TEST_DATABASE_NAME).requestDone();
     }
 
     /**
@@ -84,17 +84,18 @@ public class TestMongoDbAppenderAuth
     @Ignore
     public void testAppenderActivateNoAuth()
     {
-	PropertyConfigurator.configure(LOG4J_AUTH_PROPS);
+        PropertyConfigurator.configure(LOG4J_AUTH_PROPS);
     }
-    
+
     /**
      * Adds the user to the test database before activating the appender.
      */
     @Test
     public void testAppenderActivateWithAuth()
     {
-	mongo.getDB(TEST_DATABASE_NAME).addUser(username, password.toCharArray());
-	PropertyConfigurator.configure(LOG4J_AUTH_PROPS);
+        mongo.getDB(TEST_DATABASE_NAME).addUser(username,
+                password.toCharArray());
+        PropertyConfigurator.configure(LOG4J_AUTH_PROPS);
     }
 
 }

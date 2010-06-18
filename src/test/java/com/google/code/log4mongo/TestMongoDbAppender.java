@@ -27,6 +27,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.mongodb.BasicDBList;
@@ -220,6 +221,35 @@ public class TestMongoDbAppender
         assertEquals("I'm the real culprit!", chainedEntry.get("message"));
     }
     
+    
+    @Test
+    public void testQuotesInMessage()
+    {
+        assertEquals(0L, countLogEntries());
+        log.warn("Quotes\" \"embedded");
+        assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("WARN"));
+
+        // verify log entry content
+        DBObject entry = collection.findOne();
+        assertNotNull(entry);
+        assertEquals("WARN", entry.get("level"));
+        assertEquals("Quotes\" \"embedded", entry.get("message"));
+    }
+
+    @Test
+    public void testPerformance() throws Exception
+    {
+        int NUM_MESSAGES = 1000;
+        long now = System.currentTimeMillis();
+        for (int i = 0; i < NUM_MESSAGES; i++)
+        {
+            log.warn("Warn entry");
+        }
+        long dur = System.currentTimeMillis() - now;
+        System.out.println("Millis to log " + NUM_MESSAGES + " messages:" + dur);
+        assertEquals(NUM_MESSAGES, countLogEntries());
+    }
     
     private long countLogEntries()
     {
