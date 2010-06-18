@@ -214,7 +214,7 @@ public class TestMongoDbPatternLayout
         props.put("log4j.appender.MongoDB.databaseName", "log4mongotest");
         props.put("log4j.appender.MongoDB.layout", "com.google.code.log4mongo.CustomPatternLayout");
         props.put("log4j.appender.MongoDB.layout.ConversionPattern",
-                "{\"extra\":\"%e\",\"timestamp\":\"%d{yyyy-MM-dd HH:mm:ss}\",\"level\":\"%p\",\"class\":\"%c{1}\",\"message\":\"%m\"}");
+                "{\"extra\":\"%e\",\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"class\":\"%c{1}\",\"message\":\"%m\"}");
         props.put("log4j.appender.MongoDB.loggingStyle", "PatternLayout");
         return props;
     }
@@ -227,7 +227,7 @@ public class TestMongoDbPatternLayout
         props.put("log4j.appender.MongoDBInvalidStyle.databaseName", "log4mongotest");
         props.put("log4j.appender.MongoDBInvalidStyle.layout", "com.google.code.log4mongo.CustomPatternLayout");
         props.put("log4j.appender.MongoDBInvalidStyle.layout.ConversionPattern",
-                "{\"timestamp\":\"%d{yyyy-MM-dd HH:mm:ss}\",\"level\":\"%p\"}");
+                "{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\"}");
         props.put("log4j.appender.MongoDBInvalidStyle.loggingStyle", "InvalidStyle");
         return props;
     }
