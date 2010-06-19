@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -39,14 +40,8 @@ import com.mongodb.Mongo;
 /**
  * JUnit unit tests for PatternLayout style logging.
  * 
- * Since many of the tests depend on different Log4J property settings, each
+ * Since tests may depend on different Log4J property settings, each
  * test reconfigures an appender using a Properties object.
- * 
- * For some Log4J appenders (especially file appenders) it is common to use
- * blank space padding to get fields in adjacent rows to line up. For example,
- * %-5p is often used to make all log levels the same width in characters. Since
- * each value is stored in a separate property in the document, it usually
- * doesn't make sense to use blank space padding with MongoDbAppender.
  * 
  * Note: these tests require that a MongoDB server is running, and (by default)
  * assumes that server is listening on the default port (27017) on localhost.
@@ -139,7 +134,8 @@ public class TestMongoDbPatternLayout
         appender.setCollection(collection);
 
         assertEquals(0L, countLogEntries());
-        log.warn("\"Quotes\" \"embedded\"");
+        String msg = "\"Quotes\" \"embedded\""; 
+        log.warn(msg);
         assertEquals(1L, countLogEntries());
         assertEquals(1L, countLogEntriesAtLevel("WARN"));
 
@@ -147,27 +143,61 @@ public class TestMongoDbPatternLayout
         DBObject entry = collection.findOne();
         assertNotNull(entry);
         assertEquals("WARN", entry.get("level"));
-        assertEquals("\"Quotes\" \"embedded\"", entry.get("message"));
+        assertEquals(msg, entry.get("message"));
     }
-
+    
     @Test
-    public void testInvalidStyle()
+    public void testNestedDoc()
     {
-        PropertyConfigurator.configure(getInvalidStyleProperties());
+        PropertyConfigurator.configure(getNestedDocPatternLayoutProperties());
 
-        // This will cause the appender to log to the default error handler. The
-        // default error handler logs to the console. One option for improving
-        // this test would be to modify the appender to have a custom error
-        // handler that retains the last error that was logged.
-        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender("MongoDBInvalidStyle");
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender("MongoDB");
 
         collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
         appender.setCollection(collection);
 
-        // If logging style is invalid, attempts to log messages will be ignored
         assertEquals(0L, countLogEntries());
-        log.trace("Trace entry");
+        String msg = "Nested warning";
+        log.warn(msg);
+        assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("WARN"));
+
+        // verify log entry content
+        DBObject entry = collection.findOne();
+        assertNotNull(entry);
+        assertEquals("WARN", entry.get("level"));
+        DBObject nestedDoc = (DBObject) entry.get("nested");
+        assertEquals(msg, nestedDoc.get("message"));
+    }
+    
+    /**
+     * Tests that the document stored in MongoDB has an array as a value if the conversion pattern
+     * specifies an array as a value.
+     */
+    @Test
+    public void testArrayValue()
+    {
+        PropertyConfigurator.configure(getArrayPatternLayoutProperties());
+
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender("MongoDB");
+
+        collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        appender.setCollection(collection);
+
         assertEquals(0L, countLogEntries());
+        String msg = "Message in array";
+        log.warn(msg);
+        assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("WARN"));
+
+        // verify log entry content
+        DBObject entry = collection.findOne();
+        assertNotNull(entry);
+        assertEquals("WARN", entry.get("level"));
+        BasicDBList list = (BasicDBList) entry.get("array");
+        assertEquals(2, list.size());
+        assertEquals(this.getClass().getSimpleName(), list.get(0));
+        assertEquals(msg, list.get(1));
     }
 
     @Test
@@ -210,25 +240,35 @@ public class TestMongoDbPatternLayout
     {
         Properties props = new Properties();
         props.put("log4j.rootLogger", "DEBUG, MongoDB");
-        props.put("log4j.appender.MongoDB", "com.google.code.log4mongo.MongoDbAppender");
+        props.put("log4j.appender.MongoDB", "com.google.code.log4mongo.MongoDbPatternLayoutAppender");
         props.put("log4j.appender.MongoDB.databaseName", "log4mongotest");
         props.put("log4j.appender.MongoDB.layout", "com.google.code.log4mongo.CustomPatternLayout");
         props.put("log4j.appender.MongoDB.layout.ConversionPattern",
                 "{\"extra\":\"%e\",\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"class\":\"%c{1}\",\"message\":\"%m\"}");
-        props.put("log4j.appender.MongoDB.loggingStyle", "PatternLayout");
         return props;
     }
-
-    private Properties getInvalidStyleProperties()
+    
+    private Properties getNestedDocPatternLayoutProperties()
     {
         Properties props = new Properties();
-        props.put("log4j.rootLogger", "DEBUG, MongoDBInvalidStyle");
-        props.put("log4j.appender.MongoDBInvalidStyle", "com.google.code.log4mongo.MongoDbAppender");
-        props.put("log4j.appender.MongoDBInvalidStyle.databaseName", "log4mongotest");
-        props.put("log4j.appender.MongoDBInvalidStyle.layout", "com.google.code.log4mongo.CustomPatternLayout");
-        props.put("log4j.appender.MongoDBInvalidStyle.layout.ConversionPattern",
-                "{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\"}");
-        props.put("log4j.appender.MongoDBInvalidStyle.loggingStyle", "InvalidStyle");
+        props.put("log4j.rootLogger", "DEBUG, MongoDB");
+        props.put("log4j.appender.MongoDB", "com.google.code.log4mongo.MongoDbPatternLayoutAppender");
+        props.put("log4j.appender.MongoDB.databaseName", "log4mongotest");
+        props.put("log4j.appender.MongoDB.layout", "com.google.code.log4mongo.CustomPatternLayout");
+        props.put("log4j.appender.MongoDB.layout.ConversionPattern",
+                "{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"nested\":{\"class\":\"%c{1}\",\"message\":\"%m\"}}");
+        return props;
+    }
+    
+    private Properties getArrayPatternLayoutProperties()
+    {
+        Properties props = new Properties();
+        props.put("log4j.rootLogger", "DEBUG, MongoDB");
+        props.put("log4j.appender.MongoDB", "com.google.code.log4mongo.MongoDbPatternLayoutAppender");
+        props.put("log4j.appender.MongoDB.databaseName", "log4mongotest");
+        props.put("log4j.appender.MongoDB.layout", "com.google.code.log4mongo.CustomPatternLayout");
+        props.put("log4j.appender.MongoDB.layout.ConversionPattern",
+                "{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"array\":[\"%c{1}\",\"%m\"]}");
         return props;
     }
 

@@ -2,19 +2,8 @@
 log4j.rootLogger=error, MongoDB
 
 # MongoDB appender classname
+# To log with a PatternLayout, use com.google.code.log4mongo.MongoDbPatternLayoutAppender
 log4j.appender.MongoDB=com.google.code.log4mongo.MongoDbAppender
-
-# Options are LoggingEvent or PatternLayout. LoggingEvent style directly serializes the LoggingEvent as
-# a BSON document in MongoDB. PatternLayout style uses the PatternLayout class specified below to
-# store key-value pairs as a BSON document in MongoDB.
-log4j.appender.MongoDB.loggingStyle=LoggingEvent
-
-# The layout property is required regardless of the logging style, due to how Log4J initializes appenders.
-# For LoggingEvent logging style, this layout is not used, though it must reference a class that extends Layout.
-# For PatternLayout style, you can specify a class that extends MongoDbPatternLayout if you need to
-#   use a custom PatternParser and custom PatternConverters to log additional data. You must also specify
-#   a valid value for the ConversionPattern property below.
-log4j.appender.MongoDB.layout=com.google.code.log4mongo.MongoDbPatternLayout
 
 # MongoDB appender properties - all are optional - default values shown below (except for userName and password, which default to undefined)
 log4j.appender.MongoDB.hostname=localhost
@@ -23,8 +12,16 @@ log4j.appender.MongoDB.databaseName=log4mongo
 log4j.appender.MongoDB.collectionName=logevents
 log4j.appender.MongoDB.userName=open
 log4j.appender.MongoDB.password=sesame
-# The conversion pattern is required only if the loggingStyle property is set to PatternLayout.
-#   The pattern must be a JSON document of key-value pairs. The value of each pair will typically contain
-#   one or more converter characters that are replaced when a message is logged. The "." character is used
-#   to refer to inner objects in Mongo, so don't use a "." in a key.
-log4j.appender.MongoDB.layout.ConversionPattern={"timestamp":"%d{yyyy-MM-dd HH:mm:ss}","level":"%p","class":"%c{1}","message":"%m"}
+
+# The layout property is required only if the MongoDbPatternLayoutAppender appender is used.
+#   If a custom PatternParser and custom PatternConverters are required to log additional data,
+#   the specified layout class must extend MongoDbPatternLayout. A ConversionPattern property
+#   should also be specified.
+#log4j.appender.MongoDB.layout=com.google.code.log4mongo.MongoDbPatternLayout
+
+# The ConversionPattern property is required only if MongoDbPatternLayoutAppender is used.
+#   The pattern must be a valid JSON document. The value will typically contain one or more
+#   converter characters that are replaced when a message is logged. A key cannot begin with $,
+#   contain a . or be equal to _id due to BSON naming restrictions. The JSON document can have
+#   sub-documents. Values can be strings or arrays.
+#log4j.appender.MongoDB.layout.ConversionPattern={"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}","level":"%p","class":"%c{1}","message":"%m"}
