@@ -23,11 +23,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.mongodb.BasicDBList;
@@ -57,6 +57,8 @@ public class TestMongoDbAppender
     
     private final static String MONGODB_APPENDER_NAME = "MongoDB";
     
+    private final static String LOG4J_PROPS = "src/test/resources/log4j.properties";
+    
     private final Mongo           mongo;
     private final MongoDbAppender appender;
     private DBCollection    collection;
@@ -65,6 +67,7 @@ public class TestMongoDbAppender
     public TestMongoDbAppender()
         throws Exception
     {
+        PropertyConfigurator.configure(LOG4J_PROPS);
         mongo    = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
         appender = (MongoDbAppender)Logger.getRootLogger().getAppender(MONGODB_APPENDER_NAME);
     }
@@ -228,26 +231,27 @@ public class TestMongoDbAppender
         assertEquals(0L, countLogEntries());
         log.warn("Quotes\" \"embedded");
         assertEquals(1L, countLogEntries());
-        assertEquals(1L, countLogEntriesAtLevel("WARN"));
-
-        // verify log entry content
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertEquals("WARN", entry.get("level"));
-        assertEquals("Quotes\" \"embedded", entry.get("message"));
+	assertEquals(1L, countLogEntriesAtLevel("WARN"));
+	
+	// verify log entry content
+	DBObject entry = collection.findOne();
+	assertNotNull(entry);
+	assertEquals("WARN", entry.get("level"));
+	assertEquals("Quotes\" \"embedded", entry.get("message"));
     }
-
+    
+    
     @Test
-    public void testPerformance() throws Exception
+    public void testPerformance()
+        throws Exception
     {
-        int NUM_MESSAGES = 1000;
+        long NUM_MESSAGES = 1000;
         long now = System.currentTimeMillis();
-        for (int i = 0; i < NUM_MESSAGES; i++)
-        {
+        for (long i = 0; i < NUM_MESSAGES; i++) {
             log.warn("Warn entry");
         }
         long dur = System.currentTimeMillis() - now;
-        System.out.println("Millis to log " + NUM_MESSAGES + " messages:" + dur);
+        System.out.println("Milliseconds to log " + NUM_MESSAGES + " messages:" + dur);
         assertEquals(NUM_MESSAGES, countLogEntries());
     }
     

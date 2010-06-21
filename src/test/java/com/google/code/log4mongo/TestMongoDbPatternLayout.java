@@ -57,6 +57,8 @@ public class TestMongoDbPatternLayout
     public final static int TEST_MONGO_SERVER_PORT = 27017;
     private final static String TEST_DATABASE_NAME = "log4mongotest";
     private final static String TEST_COLLECTION_NAME = "logeventslayout";
+    
+    private final static String APPENDER_NAME = "MongoDBPatternLayout";
 
     private final Mongo mongo;
     private DBCollection collection;
@@ -104,7 +106,7 @@ public class TestMongoDbPatternLayout
     {
         PropertyConfigurator.configure(getValidPatternLayoutProperties());
 
-        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender("MongoDB");
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(APPENDER_NAME);
 
         collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
         appender.setCollection(collection);
@@ -128,7 +130,7 @@ public class TestMongoDbPatternLayout
     {
         PropertyConfigurator.configure(getValidPatternLayoutProperties());
 
-        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender("MongoDB");
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(APPENDER_NAME);
 
         collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
         appender.setCollection(collection);
@@ -151,7 +153,7 @@ public class TestMongoDbPatternLayout
     {
         PropertyConfigurator.configure(getNestedDocPatternLayoutProperties());
 
-        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender("MongoDB");
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(APPENDER_NAME);
 
         collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
         appender.setCollection(collection);
@@ -179,7 +181,7 @@ public class TestMongoDbPatternLayout
     {
         PropertyConfigurator.configure(getArrayPatternLayoutProperties());
 
-        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender("MongoDB");
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(APPENDER_NAME);
 
         collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
         appender.setCollection(collection);
@@ -205,7 +207,7 @@ public class TestMongoDbPatternLayout
     {
         PropertyConfigurator.configure(getValidPatternLayoutProperties());
 
-        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender("MongoDB");
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(APPENDER_NAME);
 
         collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
         appender.setCollection(collection);
@@ -239,11 +241,11 @@ public class TestMongoDbPatternLayout
     private Properties getValidPatternLayoutProperties()
     {
         Properties props = new Properties();
-        props.put("log4j.rootLogger", "DEBUG, MongoDB");
-        props.put("log4j.appender.MongoDB", "com.google.code.log4mongo.MongoDbPatternLayoutAppender");
-        props.put("log4j.appender.MongoDB.databaseName", "log4mongotest");
-        props.put("log4j.appender.MongoDB.layout", "com.google.code.log4mongo.CustomPatternLayout");
-        props.put("log4j.appender.MongoDB.layout.ConversionPattern",
+        props.put("log4j.rootLogger", "DEBUG, MongoDBPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout", "com.google.code.log4mongo.MongoDbPatternLayoutAppender");
+        props.put("log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest");
+        props.put("log4j.appender.MongoDBPatternLayout.layout", "com.google.code.log4mongo.CustomPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
                 "{\"extra\":\"%e\",\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"class\":\"%c{1}\",\"message\":\"%m\"}");
         return props;
     }
@@ -251,11 +253,11 @@ public class TestMongoDbPatternLayout
     private Properties getNestedDocPatternLayoutProperties()
     {
         Properties props = new Properties();
-        props.put("log4j.rootLogger", "DEBUG, MongoDB");
-        props.put("log4j.appender.MongoDB", "com.google.code.log4mongo.MongoDbPatternLayoutAppender");
-        props.put("log4j.appender.MongoDB.databaseName", "log4mongotest");
-        props.put("log4j.appender.MongoDB.layout", "com.google.code.log4mongo.CustomPatternLayout");
-        props.put("log4j.appender.MongoDB.layout.ConversionPattern",
+        props.put("log4j.rootLogger", "DEBUG, MongoDBPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout", "com.google.code.log4mongo.MongoDbPatternLayoutAppender");
+        props.put("log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest");
+        props.put("log4j.appender.MongoDBPatternLayout.layout", "com.google.code.log4mongo.CustomPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
                 "{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"nested\":{\"class\":\"%c{1}\",\"message\":\"%m\"}}");
         return props;
     }
@@ -263,11 +265,11 @@ public class TestMongoDbPatternLayout
     private Properties getArrayPatternLayoutProperties()
     {
         Properties props = new Properties();
-        props.put("log4j.rootLogger", "DEBUG, MongoDB");
-        props.put("log4j.appender.MongoDB", "com.google.code.log4mongo.MongoDbPatternLayoutAppender");
-        props.put("log4j.appender.MongoDB.databaseName", "log4mongotest");
-        props.put("log4j.appender.MongoDB.layout", "com.google.code.log4mongo.CustomPatternLayout");
-        props.put("log4j.appender.MongoDB.layout.ConversionPattern",
+        props.put("log4j.rootLogger", "DEBUG, MongoDBPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout", "com.google.code.log4mongo.MongoDbPatternLayoutAppender");
+        props.put("log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest");
+        props.put("log4j.appender.MongoDBPatternLayout.layout", "com.google.code.log4mongo.CustomPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
                 "{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"array\":[\"%c{1}\",\"%m\"]}");
         return props;
     }
