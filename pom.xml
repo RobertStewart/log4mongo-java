@@ -27,6 +27,11 @@
       <name>Jozef Sevcik</name>
       <email>sevcik@styxys.com</email>
     </developer>
+    <developer>
+      <id>wombatnation</id>
+      <name>Robert Stewart</name>
+      <email>robert@wombatnation.com</email>
+    </developer>
   </developers>
 
   <issueManagement>
