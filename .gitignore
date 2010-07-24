@@ -6,3 +6,6 @@ target
 .classpath
 .project
 .settings
+*.swp
+*.swo
+
