@@ -34,6 +34,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
+import com.mongodb.MongoException;
 
 
 /**
@@ -178,7 +179,12 @@ public class MongoDbAppender
         
         if (bson != null)
         {
-            collection.insert(bson);
+            try {
+                getCollection().insert(bson);
+            } catch (MongoException e) {
+                errorHandler.error("Failed to insert document to MongoDB", e,
+                               ErrorCode.WRITE_FAILURE);
+            }
         }
     }
     
