@@ -1,7 +1,11 @@
 Description
 -----------
-This library provides a Log4J Appender [1] that writes log events to the
+This library provides Log4J Appenders [1] that write log events to the
 MongoDB document oriented database [2].
+
+MongoDbAppender - Stores a BSONified version of the Log4J LoggingEvent
+MongoDbPatternLayoutAppender - Uses standard Log4J pattern layout, parser
+    and converter classes to store a log message as a custom-formatted document
 
 
 Author
@@ -18,8 +22,8 @@ Pre-requisites
 --------------
 JDK 1.6+
 MongoDB Server v1.0+ (tested with 1.2.1, 1.4.x) (required for unit tests)
-MongoDB Java Driver v1.0+ (tested with 1.2, 1.4)
-Log4J 1.2+ (tested with 1.2.15 - note: won't work on earlier versions due to
+MongoDB Java Driver v1.0+ (tested with 2.0)
+Log4J 1.2+ (tested with 1.2.16 - note: won't work on earlier versions due to
             log4j API changes)
 
 
@@ -36,13 +40,13 @@ Installation / Configuration
    Java Driver JARs, into the classpath of your Java application
 
 4. Configure log4j as usual, referring to the log4j.properties.sample file for
-   the specific configuration properties this appender supports
+   the specific configuration properties the appender supports
 
 
 Todos
 -----
 * Add unit tests
-  * authentication
+  * connection failures
   
 * Clean up BSONification code - currently it's functional but skanky.
   Consider using daybreak for this [4].
