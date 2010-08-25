@@ -221,6 +221,7 @@ public class MongoDbAppender
             nullSafePut(result, "level",   loggingEvent.getLevel().toString());
             nullSafePut(result, "thread",  loggingEvent.getThreadName());
             nullSafePut(result, "message", loggingEvent.getMessage());
+            nullSafePut(result, "loggerName", bsonifyClassName(loggingEvent.getLoggerName()));
             
             addLocationInformation(result, loggingEvent.getLocationInformation());
             addThrowableInformation(result, loggingEvent.getThrowableInformation());
