@@ -246,13 +246,24 @@ public class TestMongoDbAppender
     }
 
     @Test
-    public void testWrappedLoggerRecordsLoggerNameCorrectly() {
-        WrappedLogger wrapped = new WrappedLogger(log);
-        wrapped.info("From the wrapped logger");
+    public void testRegularLoggerRecordsLoggerNameCorrectly() {
+        log.info("From an unwrapped logger");
 
         assertEquals(1, countLogEntries());
         assertEquals(1, countLogEntriesAtLevel("info"));
         assertEquals(1, countLogEntriesWhere(BasicDBObjectBuilder.start().add("loggerName.className", "TestMongoDbAppender").get()));
+        assertEquals(1, countLogEntriesWhere(BasicDBObjectBuilder.start().add("class.className", "TestMongoDbAppender").get()));    
+    }
+
+    @Test
+    public void testWrappedLoggerRecordsLoggerNameCorrectly() {
+        WrappedLogger wrapped = new WrappedLogger(log);
+        wrapped.info("From a wrapped logger");
+
+        assertEquals(1, countLogEntries());
+        assertEquals(1, countLogEntriesAtLevel("info"));
+        assertEquals(1, countLogEntriesWhere(BasicDBObjectBuilder.start().add("loggerName.className", "TestMongoDbAppender").get()));
+        assertEquals(1, countLogEntriesWhere(BasicDBObjectBuilder.start().add("class.className", "WrappedLogger").get()));
     }
     
     private long countLogEntries()
