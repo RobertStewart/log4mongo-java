@@ -55,6 +55,11 @@ import com.mongodb.MongoException;
  *   "fileName"   : "TestMongoDbAppender.java",
  *   "method"     : "testLogWithChainedExceptions",
  *   "lineNumber" : "147",
+ *   "loggerName" : {
+ *                    "fullyQualifiedClassName" : "com.google.code.log4mongo.TestMongoDbAppender",
+ *                    "package"                 : [ "com", "google", "code", "log4mongo" ],
+ *                    "className"               : "TestMongoDbAppender"
+ *                  },
  *   "class"      : {
  *                    "fullyQualifiedClassName" : "com.google.code.log4mongo.TestMongoDbAppender",
  *                    "package"                 : [ "com", "google", "code", "log4mongo" ],
