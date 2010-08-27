@@ -18,23 +18,13 @@
 
 package com.google.code.log4mongo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
+import com.mongodb.*;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -253,6 +243,16 @@ public class TestMongoDbAppender
         long dur = System.currentTimeMillis() - now;
         System.out.println("Milliseconds to log " + NUM_MESSAGES + " messages:" + dur);
         assertEquals(NUM_MESSAGES, countLogEntries());
+    }
+
+    @Test
+    public void testWrappedLoggerRecordsLoggerNameCorrectly() {
+        WrappedLogger wrapped = new WrappedLogger(log);
+        wrapped.info("From the wrapped logger");
+
+        assertEquals(1, countLogEntries());
+        assertEquals(1, countLogEntriesAtLevel("info"));
+        assertEquals(1, countLogEntriesWhere(BasicDBObjectBuilder.start().add("loggerName.className", "TestMongoDbAppender").get()));
     }
     
     private long countLogEntries()
