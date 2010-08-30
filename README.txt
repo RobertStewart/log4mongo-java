@@ -7,6 +7,7 @@ MongoDbAppender - Stores a BSONified version of the Log4J LoggingEvent
 MongoDbPatternLayoutAppender - Uses standard Log4J pattern layout, parser
     and converter classes to store a log message as a custom-formatted document
 
+More details at http://log4mongo.org/display/PUB/Log4mongo+for+Java
 
 Author
 ------
@@ -16,16 +17,21 @@ Contributors
 ------
 Jozef Sevcik (sevcik@styxys.com)
 Robert Stewart (robert@wombatnation.com)
+Zach Bailey
 
 
 Pre-requisites
 --------------
 JDK 1.6+
-MongoDB Server v1.0+ (tested with 1.2.1, 1.4.x) (required for unit tests)
-MongoDB Java Driver v1.0+ (tested with 2.0)
+MongoDB Server v1.+ (tested with 1.2.1, 1.6.x) (required for unit tests)
+MongoDB Java Driver v1.0+ (tested with 2.1)
 Log4J 1.2+ (tested with 1.2.16 - note: won't work on earlier versions due to
             log4j API changes)
 
+Log4mongo-java 0.4.0+ should work with any version of the MongoDB Java driver. However,
+version 0.3.2 of log4mongo-java will work with MongoDB Java driver versions only up
+to 2.0. The 2.1 driver includes a source compatible, but binary incompatible, change to
+a DBCollection.insert() method used by log4mongo-java.
 
 Installation / Configuration
 ----------------------------
