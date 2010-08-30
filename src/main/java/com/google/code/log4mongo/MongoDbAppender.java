@@ -55,6 +55,11 @@ import com.mongodb.MongoException;
  *   "fileName"   : "TestMongoDbAppender.java",
  *   "method"     : "testLogWithChainedExceptions",
  *   "lineNumber" : "147",
+ *   "loggerName" : {
+ *                    "fullyQualifiedClassName" : "com.google.code.log4mongo.TestMongoDbAppender",
+ *                    "package"                 : [ "com", "google", "code", "log4mongo" ],
+ *                    "className"               : "TestMongoDbAppender"
+ *                  },
  *   "class"      : {
  *                    "fullyQualifiedClassName" : "com.google.code.log4mongo.TestMongoDbAppender",
  *                    "package"                 : [ "com", "google", "code", "log4mongo" ],
@@ -221,6 +226,7 @@ public class MongoDbAppender
             nullSafePut(result, "level",   loggingEvent.getLevel().toString());
             nullSafePut(result, "thread",  loggingEvent.getThreadName());
             nullSafePut(result, "message", loggingEvent.getMessage());
+            nullSafePut(result, "loggerName", bsonifyClassName(loggingEvent.getLoggerName()));
             
             addLocationInformation(result, loggingEvent.getLocationInformation());
             addThrowableInformation(result, loggingEvent.getThrowableInformation());
