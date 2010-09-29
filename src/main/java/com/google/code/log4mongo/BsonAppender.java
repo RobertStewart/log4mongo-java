@@ -18,8 +18,23 @@
 package com.google.code.log4mongo;
 
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
 import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Category;
+import org.apache.log4j.Hierarchy;
+import org.apache.log4j.Logger;
+import org.apache.log4j.or.ObjectRenderer;
+import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
+import org.bson.BSON;
+
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
 
@@ -95,7 +110,7 @@ import com.mongodb.DBObject;
  * </pre>
  *
  * @author Peter Monks (pmonks@gmail.com)
- * @modify Gabriel Eisbruch (gabrieleisbruch@gmail.com
+ * @modify Gabriel Eisbruch (gabrieleisbruch@gmail.com)
  * @see http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html
  * @see http://www.mongodb.org/
  * @version $Id$
@@ -103,6 +118,8 @@ import com.mongodb.DBObject;
 public abstract class BsonAppender
     extends AppenderSkeleton
 {
+	
+	LogEventBsonifier bsonifier = new LogEventBsonifierImpl();
     /**
      * @see org.apache.log4j.Appender#requiresLayout()
      */
@@ -111,8 +128,6 @@ public abstract class BsonAppender
         return(false);
     }
 
- 
-    
     
     /**
      * @see org.apache.log4j.AppenderSkeleton#append(org.apache.log4j.spi.LoggingEvent)
@@ -120,7 +135,8 @@ public abstract class BsonAppender
     @Override
     protected void append(final LoggingEvent loggingEvent)
     {
-        DBObject bson = MongoDbUtils.bsonifyLoggingEvent(loggingEvent);
+    	
+        DBObject bson = bsonifier.bsonify(loggingEvent);
         /*
          * Call the append method with the bson object 
          */
@@ -132,7 +148,17 @@ public abstract class BsonAppender
      * @param bson
      */
 	protected abstract void append(DBObject bson);
+
+
+	public LogEventBsonifier getBsonifier() {
+		return bsonifier;
+	}
+
+
+	public void setBsonifier(LogEventBsonifier bsonifier) {
+		this.bsonifier = bsonifier;
+	}
     
+	
     
-   
 }
