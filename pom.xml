@@ -74,22 +74,15 @@
       <version>2.1</version>
     </dependency>
   </dependencies>
- <distributionManagement>
-     <repository>
-        <id>mercadolibre.releases</id>
-        <name>Nexus Staging Repo</name>
-        <url>dav:http://git.ml.com:8081/nexus/content/repositories/releases</url>
-     </repository>
-  </distributionManagement>
   
   <build>
-  	   <extensions>
-         <extension>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-webdav</artifactId>
-            <version>1.0-beta-2</version>
-         </extension>
-      </extensions>
+  	<extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

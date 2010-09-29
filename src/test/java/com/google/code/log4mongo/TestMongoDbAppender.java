@@ -235,6 +235,9 @@ public class TestMongoDbAppender
     public void testPerformance()
         throws Exception
     {
+        // Log one event to minimize start up effects on performance
+        log.warn("Warn entry");
+        
         long NUM_MESSAGES = 1000;
         long now = System.currentTimeMillis();
         for (long i = 0; i < NUM_MESSAGES; i++) {
@@ -242,7 +245,7 @@ public class TestMongoDbAppender
         }
         long dur = System.currentTimeMillis() - now;
         System.out.println("Milliseconds to log " + NUM_MESSAGES + " messages:" + dur);
-        assertEquals(NUM_MESSAGES, countLogEntries());
+        assertEquals(NUM_MESSAGES + 1, countLogEntries());
     }
 
     @Test

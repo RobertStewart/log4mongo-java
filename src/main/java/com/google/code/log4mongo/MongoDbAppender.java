@@ -17,35 +17,22 @@
 
 package com.google.code.log4mongo;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
-import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.ErrorCode;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 
-
 /**
- * Log4J Appender that writes log events into the MongoDB document oriented database.  Log events are fully parsed and stored
+ * Log4J Appender that writes log events into a MongoDB document oriented database.  Log events are fully parsed and stored
  * as structured records in MongoDB (this appender does not require, nor use a Log4J layout).
  * 
  * The appender does <u>not</u> create any indexes on the data that's stored - it is assumed that if query performance is
- * required those would be created externally (eg. in the mongodb shell or an external reporting application).
+ * required, those would be created externally (e.g., in the MongoDB shell or other external application).
  * 
- 
  * @author Peter Monks (pmonks@gmail.com)
- * @modify Gabriel Eisbruch (gabrieleisbruch@gmail.com)
  * @see http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html
  * @see http://www.mongodb.org/
  * @version $Id$
@@ -74,7 +61,6 @@ public class MongoDbAppender
     {
         return(false);
     }
-
  
     /**
      * @see org.apache.log4j.AppenderSkeleton#activateOptions()
@@ -106,8 +92,6 @@ public class MongoDbAppender
         }
     }
 
-   
-    
     /**
      * Note: this method is primarily intended for use by the unit tests.
      * 
@@ -122,11 +106,6 @@ public class MongoDbAppender
         this.collection = collection;
     }
     
-    
-  
-    
-
-    
     /**
      * @see org.apache.log4j.Appender#close()
      */
@@ -134,7 +113,6 @@ public class MongoDbAppender
     {
         collection = null;
     }
-
     
     /**
      * @return The hostname of the MongoDB server <i>(will not be null, empty or blank)</i>.
@@ -143,7 +121,6 @@ public class MongoDbAppender
     {
         return(hostname);
     }
-
 
     /**
      * @param hostname The MongoDB hostname to set <i>(must not be null, empty or blank)</i>.
@@ -158,7 +135,6 @@ public class MongoDbAppender
         this.hostname = hostname;
     }
     
-    
     /**
      * @return The port of the MongoDB server <i>(will be > 0)</i>.
      */
@@ -166,7 +142,6 @@ public class MongoDbAppender
     {
         return(port);
     }
-
 
     /**
      * @param port The port to set <i>(must be > 0)</i>.
@@ -180,7 +155,6 @@ public class MongoDbAppender
         this.port = port;
     }
     
-    
     /**
      * @return The database used in the MongoDB server <i>(will not be null, empty or blank)</i>.
      */
@@ -188,7 +162,6 @@ public class MongoDbAppender
     {
         return(databaseName);
     }
-
 
     /**
      * @param databaseName The database to use in the MongoDB server <i>(must not be null, empty or blank)</i>.
@@ -203,7 +176,6 @@ public class MongoDbAppender
         this.databaseName = databaseName;
     }
 
-
     /**
      * @return The collection used within the database in the MongoDB server <i>(will not be null, empty or blank)</i>.
      */
@@ -211,7 +183,6 @@ public class MongoDbAppender
     {
         return(collectionName);
     }
-
 
     /**
      * @param collectionName The collection used within the database in the MongoDB server <i>(must not be null, empty or blank)</i>.
@@ -226,7 +197,6 @@ public class MongoDbAppender
         this.collectionName = collectionName;
     }
 
-
     /**
      * @return The userName used to authenticate with MongoDB <i>(may be null)</i>.
      */
@@ -234,7 +204,6 @@ public class MongoDbAppender
     {
         return(userName);
     }
-
 
     /**
      * @param userName The userName to use when authenticating with MongoDB <i>(may be null)</i>.
@@ -244,7 +213,6 @@ public class MongoDbAppender
         this.userName = userName;
     }
     
-
     /**
      * @param password The password to use when authenticating with MongoDB <i>(may be null)</i>.
      */
@@ -252,7 +220,22 @@ public class MongoDbAppender
     {
         this.password = password;
     }
-    
+
+    /**
+     * @param bson The BSON object to insert into a MongoDB database collection.
+     */
+    @Override
+    public void append(DBObject bson) {
+        if (bson != null)
+        {
+            try {
+                getCollection().insert(bson);
+            } catch (MongoException e) {
+                errorHandler.error("Failed to insert document to MongoDB", e,
+                        ErrorCode.WRITE_FAILURE);
+            }
+        }
+    }
     
     /**
      * 
@@ -262,20 +245,5 @@ public class MongoDbAppender
     {
         return(collection);
     }
-
-
-	@Override
-	public void append(DBObject bson) {
-        if (bson != null)
-        {
-            try {
-                getCollection().insert(bson);
-            } catch (MongoException e) {
-                errorHandler.error("Failed to insert document to MongoDB", e,
-                               ErrorCode.WRITE_FAILURE);
-            }
-        }
-		
-	}
 
 }
