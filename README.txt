@@ -17,7 +17,8 @@ Contributors
 ------
 Jozef Sevcik (sevcik@styxys.com)
 Robert Stewart (robert@wombatnation.com)
-Zach Bailey
+Zach Bailey (znbailey@gmail.com)
+Gabriel Eisbruch (gabrieleisbruch@gmail.com)
 
 
 Pre-requisites
