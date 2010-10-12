@@ -52,6 +52,7 @@ public class MongoDbAppender
     private String userName       = null;
     private String password       = null;
     
+    private Mongo  mongo          = null;
     private DBCollection collection = null;
 
     /**
@@ -70,8 +71,8 @@ public class MongoDbAppender
     {
         try
         {
-            Mongo mongo    = new Mongo(hostname, port);
-            DB    database = mongo.getDB(databaseName);
+            mongo       = new Mongo(hostname, port);
+            DB database = mongo.getDB(databaseName);
             
             if (userName != null && userName.trim().length() > 0)
             {
@@ -112,6 +113,7 @@ public class MongoDbAppender
     public void close()
     {
         collection = null;
+        mongo.close();
     }
     
     /**
