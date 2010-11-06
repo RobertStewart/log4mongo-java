@@ -23,22 +23,28 @@ Gabriel Eisbruch (gabrieleisbruch@gmail.com)
 
 Pre-requisites
 --------------
-JDK 1.6+
-MongoDB Server v1.+ (tested with 1.2.1, 1.6.x) (required for unit tests)
-MongoDB Java Driver v1.0+ (tested with 2.1)
+JDK 1.5+
+MongoDB Server v1.+ (tested with 1.6.3) (required for unit tests)
+MongoDB Java Driver v2.0+ (tested with 2.1 and 2.3)
 Log4J 1.2+ (tested with 1.2.16 - note: won't work on earlier versions due to
             log4j API changes)
+Privateer (used in unit tests - a copy is in the lib dir, in case you can't get it from
+           the central Maven repo)
 
-Log4mongo-java 0.4.0+ should work with any version of the MongoDB Java driver. However,
-version 0.3.2 of log4mongo-java will work with MongoDB Java driver versions only up
+Log4mongo-java 0.4.0+ should work with any version of the MongoDB Java driver except the 2.2 version:
+* Version 0.3.2 of log4mongo-java will work with MongoDB Java driver versions only up
 to 2.0. The 2.1 driver includes a source compatible, but binary incompatible, change to
 a DBCollection.insert() method used by log4mongo-java.
+* The MongoDB Java driver 2.2 includes a bug that causes a NullPointerException if you run
+mongod not in a replica set configuration. The bug was fixed in the 2.3 driver.
+
 
 Installation / Configuration
 ----------------------------
 1. Start a local MongoDB server running on the default port - this is required
-   for the unit tests:
-       mongod -dbpath ./mongodata
+   for the unit tests. The --smallfiles arg makes the unit tests run about twice as fast,
+   since databases are created and dropped several times.
+       mongod --smallfiles --dbpath ./mongodata
 
 2. Build the JAR file using Maven2
        mvn clean package
@@ -49,10 +55,12 @@ Installation / Configuration
 4. Configure log4j as usual, referring to the log4j.properties.sample file for
    the specific configuration properties the appender supports
 
+The TestMongoDbAppenderHosts test case tests replica sets. See notes in that test case
+for starting multiple mongod instances as a replica set.
 
-Todos
+ToDos
 -----
-* Add unit tests
+* More unit tests
   * connection failures
   
 * Clean up BSONification code - currently it's functional but skanky.

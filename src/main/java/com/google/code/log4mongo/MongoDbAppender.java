@@ -17,6 +17,10 @@
 
 package com.google.code.log4mongo;
 
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.spi.ErrorCode;
 
 import com.mongodb.DB;
@@ -24,6 +28,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.mongodb.ServerAddress;
 
 /**
  * Log4J Appender that writes log events into a MongoDB document oriented database.  Log events are fully parsed and stored
@@ -41,19 +46,21 @@ public class MongoDbAppender
     extends BsonAppender
 {
     private final static String DEFAULT_MONGO_DB_HOSTNAME        = "localhost";
-    private final static int    DEFAULT_MONGO_DB_PORT            = 27017;
+    private final static String DEFAULT_MONGO_DB_PORT            = "27017";
     private final static String DEFAULT_MONGO_DB_DATABASE_NAME   = "log4mongo";
     private final static String DEFAULT_MONGO_DB_COLLECTION_NAME = "logevents";
     
     private String hostname       = DEFAULT_MONGO_DB_HOSTNAME;
-    private int    port           = DEFAULT_MONGO_DB_PORT;
+    private String port           = DEFAULT_MONGO_DB_PORT;
     private String databaseName   = DEFAULT_MONGO_DB_DATABASE_NAME;
     private String collectionName = DEFAULT_MONGO_DB_COLLECTION_NAME;
     private String userName       = null;
     private String password       = null;
     
-    private Mongo  mongo          = null;
+    private Mongo  mongo            = null;
     private DBCollection collection = null;
+    
+    private boolean initialized = false;
 
     /**
      * @see org.apache.log4j.Appender#requiresLayout()
@@ -71,7 +78,22 @@ public class MongoDbAppender
     {
         try
         {
-            mongo       = new Mongo(hostname, port);
+            // Close previous connections if reactivating
+            if (mongo != null)
+            {
+                close();
+            }
+            
+            List<ServerAddress> addresses = getServerAddresses(hostname, port);
+            if (addresses.size() < 2)
+            {
+                mongo = new Mongo(addresses.get(0));
+            }
+            else
+            {
+                // Replication set
+                mongo = new Mongo(addresses);
+            }
             DB database = mongo.getDB(databaseName);
             
             if (userName != null && userName.trim().length() > 0)
@@ -86,6 +108,7 @@ public class MongoDbAppender
             }
             
             setCollection(database.getCollection(collectionName));
+            initialized = true;
         }
         catch (Exception e)
         {
@@ -112,8 +135,10 @@ public class MongoDbAppender
      */
     public void close()
     {
-        collection = null;
-        mongo.close();
+        if (mongo != null) {
+            collection = null;
+            mongo.close();
+        }
     }
     
     /**
@@ -140,18 +165,19 @@ public class MongoDbAppender
     /**
      * @return The port of the MongoDB server <i>(will be > 0)</i>.
      */
-    public int getPort()
+    public String getPort()
     {
         return(port);
     }
 
     /**
-     * @param port The port to set <i>(must be > 0)</i>.
+     * @param port The port to set <i>(must not be null, empty or blank)</i>.
      */
-    public void setPort(final int port)
+    public void setPort(final String port)
     {
         // PRECONDITIONS
-        assert port > 0 : "port must be > 0";
+        assert port != null             : "port must not be null";
+        assert port.trim().length() > 0 : "port must not be empty or blank";
         
         // Body
         this.port = port;
@@ -227,8 +253,9 @@ public class MongoDbAppender
      * @param bson The BSON object to insert into a MongoDB database collection.
      */
     @Override
-    public void append(DBObject bson) {
-        if (bson != null)
+    public void append(DBObject bson)
+    {
+        if (initialized && bson != null)
         {
             try {
                 getCollection().insert(bson);
@@ -240,12 +267,105 @@ public class MongoDbAppender
     }
     
     /**
+     * Returns true if appender was successfully initialized. If this method
+     * returns false, the appender should not attempt to log events.
+     * 
+     * @return true if appender was successfully initialized
+     */
+    public boolean isInitialized() {
+        return initialized;
+    }
+    
+    /**
      * 
      * @return The MongoDB collection to which events are logged.
      */
     protected DBCollection getCollection()
     {
         return(collection);
+    }
+    
+    /**
+     * Returns a List of ServerAddress objects for each host specified in the hostname
+     * property. Returns an empty list if configuration is detected to be invalid, e.g.:
+     * <ul>
+     *   <li>Port property doesn't contain either one port or one port per host</li>
+     *   <li>After parsing port property to integers, there isn't either one port or one port per host</li>
+     * </ul>
+     * 
+     * @param hostname Blank space delimited hostnames
+     * @param port Blank space delimited ports. Must specify one port for all hosts or a port per host.
+     * @return List of ServerAddresses to connect to
+     */
+    private List<ServerAddress> getServerAddresses(String hostname, String port) {
+        List<ServerAddress> addresses = new ArrayList<ServerAddress>();
+        
+        String[] hosts = hostname.split(" ");
+        String[] ports = port.split(" ");
+        
+        if (ports.length != 1 && ports.length != hosts.length)
+        {
+            errorHandler.error("MongoDB appender port property must contain one port or a port per host", null,
+                    ErrorCode.ADDRESS_PARSE_FAILURE);
+        }
+        else
+        {
+            List<Integer> portNums = getPortNums(ports);
+            // Validate number of ports again after parsing
+            if (portNums.size() != 1 && portNums.size() != hosts.length)
+            {
+                errorHandler.error("MongoDB appender port property must contain one port or a valid port per host", null,
+                        ErrorCode.ADDRESS_PARSE_FAILURE);
+            }
+            else
+            {
+                boolean onePort = (portNums.size() == 1);
+
+                int i = 0;
+                for (String host : hosts)
+                {
+                    int portNum = (onePort) ? portNums.get(0) : portNums.get(i);
+                    try {
+                        addresses.add(new ServerAddress(host.trim(), portNum));
+                    }
+                    catch (UnknownHostException e)
+                    {
+                        errorHandler.error("MongoDB appender hostname property contains unknown host", e,
+                                ErrorCode.ADDRESS_PARSE_FAILURE);
+                    }
+                    i++;
+                }
+            }
+        }
+        return addresses;
+    }
+    
+    private List<Integer> getPortNums(String[] ports) {
+        List<Integer> portNums = new ArrayList<Integer>();
+
+        for (String port : ports)
+        {
+            try
+            {
+                Integer portNum = Integer.valueOf(port.trim());
+                if (portNum < 0) {
+                    errorHandler.error("MongoDB appender port property can't contain a negative integer", null,
+                            ErrorCode.ADDRESS_PARSE_FAILURE);
+                }
+                else
+                {
+                    portNums.add(portNum);
+                }
+            }
+            catch (NumberFormatException e)
+            {
+                errorHandler.error("MongoDB appender can't parse a port property value into an integer", e,
+                        ErrorCode.ADDRESS_PARSE_FAILURE);
+            }
+            
+        }
+        
+        return portNums;
     }
 
 }

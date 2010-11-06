@@ -19,6 +19,7 @@ package com.google.code.log4mongo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -106,7 +107,16 @@ public class TestMongoDbAppender
         mongo.getDB(TEST_DATABASE_NAME).requestDone();
     }
 
+    
+    @Test
+    public void testInitialized()
+        throws Exception
+    {
+        if (!appender.isInitialized())
+            fail();
+    }
 
+    
     @Test
     public void testSingleLogEntry()
         throws Exception
@@ -253,7 +263,7 @@ public class TestMongoDbAppender
             log.warn("Warn entry");
         }
         long dur = System.currentTimeMillis() - now;
-        System.out.println("Milliseconds to log " + NUM_MESSAGES + " messages:" + dur);
+        System.out.println("Milliseconds for MongoDbAppender to log " + NUM_MESSAGES + " messages:" + dur);
         assertEquals(NUM_MESSAGES + 1, countLogEntries());
     }
 

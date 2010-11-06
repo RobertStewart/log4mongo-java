@@ -216,7 +216,7 @@ public class TestMongoDbPatternLayout
             log.warn("Warn entry");
         }
         long dur = System.currentTimeMillis() - now;
-        System.out.println("Millis to log " + NUM_MESSAGES + " messages:" + dur);
+        System.out.println("Milliseconds for MongoDbPatternLayoutAppender to log " + NUM_MESSAGES + " messages:" + dur);
         assertEquals(NUM_MESSAGES, countLogEntries());
     }
 

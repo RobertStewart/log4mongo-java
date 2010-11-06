@@ -64,25 +64,28 @@ public class MongoDbPatternLayoutAppender extends MongoDbAppender
     @Override
     protected void append(final LoggingEvent loggingEvent)
     {
-        DBObject bson = null;
-        String json = layout.format(loggingEvent);
-
-        if (json.length() > 0)
+        if (isInitialized())
         {
-            Object obj = JSON.parse(json);
-            if (obj instanceof DBObject)
+            DBObject bson = null;
+            String json = layout.format(loggingEvent);
+
+            if (json.length() > 0)
             {
-                bson = (DBObject) obj;
+                Object obj = JSON.parse(json);
+                if (obj instanceof DBObject)
+                {
+                    bson = (DBObject) obj;
+                }
             }
-        }
 
-        if (bson != null)
-        {
-            try {
-                getCollection().insert(bson);
-            } catch (MongoException e) {
-                errorHandler.error("Failed to insert document to MongoDB", e,
-                               ErrorCode.WRITE_FAILURE);
+            if (bson != null)
+            {
+                try {
+                    getCollection().insert(bson);
+                } catch (MongoException e) {
+                    errorHandler.error("Failed to insert document to MongoDB", e,
+                            ErrorCode.WRITE_FAILURE);
+                }
             }
         }
     }
