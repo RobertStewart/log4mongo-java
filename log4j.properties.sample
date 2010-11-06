@@ -5,7 +5,10 @@ log4j.rootLogger=error, MongoDB
 # To log with a PatternLayout, use com.google.code.log4mongo.MongoDbPatternLayoutAppender
 log4j.appender.MongoDB=com.google.code.log4mongo.MongoDbAppender
 
-# MongoDB appender properties - all are optional - default values shown below (except for userName and password, which default to undefined)
+# MongoDB appender properties
+#  All are optional - defaults shown below (except for userName and password, which default to undefined)
+#  If using a replica set, set hostname to blank space-delimited list of host seeds. Don't include arbiters.
+#      Also, set port to either one port that all hosts will use or space-delimited list of one port per hostname 
 log4j.appender.MongoDB.hostname=localhost
 log4j.appender.MongoDB.port=27017
 log4j.appender.MongoDB.databaseName=log4mongo

@@ -25,13 +25,13 @@ Pre-requisites
 --------------
 JDK 1.5+
 MongoDB Server v1.+ (tested with 1.6.3) (required for unit tests)
-MongoDB Java Driver v2.0+ (tested with 2.1 and 2.3)
-Log4J 1.2+ (tested with 1.2.16 - note: won't work on earlier versions due to
+MongoDB Java Driver v2.0+, but not 2.2 (tested with 2.1 and 2.3)
+Log4J 1.2+ (tested with 1.2.16 - note: tests won't work on earlier versions due to
             log4j API changes)
 Privateer (used in unit tests - a copy is in the lib dir, in case you can't get it from
            the central Maven repo)
 
-Log4mongo-java 0.4.0+ should work with any version of the MongoDB Java driver except the 2.2 version:
+Additional notes:
 * Version 0.3.2 of log4mongo-java will work with MongoDB Java driver versions only up
 to 2.0. The 2.1 driver includes a source compatible, but binary incompatible, change to
 a DBCollection.insert() method used by log4mongo-java.
@@ -43,7 +43,8 @@ Installation / Configuration
 ----------------------------
 1. Start a local MongoDB server running on the default port - this is required
    for the unit tests. The --smallfiles arg makes the unit tests run about twice as fast,
-   since databases are created and dropped several times.
+   since databases are created and dropped several times, though it generally should not
+   be used in production.
        mongod --smallfiles --dbpath ./mongodata
 
 2. Build the JAR file using Maven2
