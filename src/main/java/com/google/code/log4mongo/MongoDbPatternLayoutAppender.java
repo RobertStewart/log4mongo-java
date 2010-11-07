@@ -40,8 +40,8 @@ import com.mongodb.util.JSON;
  * application).
  * 
  * @author Robert Stewart (robert@wombatnation.com)
- * @see http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html
- * @see http://www.mongodb.org/
+ * @see <a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html">Log4J Appender Interface</a>
+ * @see <a href="http://www.mongodb.org/">MongoDB</a>
  * @version $Id$
  */
 public class MongoDbPatternLayoutAppender extends MongoDbAppender
