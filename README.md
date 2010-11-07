@@ -18,10 +18,10 @@ More details are at the [Project site](http://log4mongo.org/display/PUB/Log4mong
 Peter Monks (pmonks@gmail.com)
 
 # Contributors
-Jozef Sevcik (sevcik@styxys.com)
-Robert Stewart (robert@wombatnation.com)
-Zach Bailey (znbailey@gmail.com)
-Gabriel Eisbruch (gabrieleisbruch@gmail.com)
+* Jozef Sevcik (sevcik@styxys.com)
+* Robert Stewart (robert@wombatnation.com)
+* Zach Bailey (znbailey@gmail.com)
+* Gabriel Eisbruch (gabrieleisbruch@gmail.com)
 
 
 # Pre-requisites
@@ -29,9 +29,9 @@ Gabriel Eisbruch (gabrieleisbruch@gmail.com)
 * MongoDB Server v1.+ (tested with 1.6.3) (required for unit tests)
 * MongoDB Java Driver v2.0+, but not 2.2 (tested with 2.1 and 2.3)
 * Log4J 1.2+ (tested with 1.2.16 - note: tests won't work on earlier versions due to
-            log4j API changes)
-* Privateer (used in unit tests - a copy is in the lib dir, in case you can't get it from
-           the central Maven repo)
+log4j API changes)
+* Privateer (used in unit tests - a copy is in the lib dir, in case you can't get it
+from the central Maven repo)
 
 ## Additional notes:
 * Version 0.3.2 of log4mongo-java will work with MongoDB Java driver versions only up
@@ -52,7 +52,7 @@ mongod not in a replica set configuration. The bug was fixed in the 2.3 driver.
        mvn clean package
 
 3. Deploy the target/log4mongo-java-x.y.jar file, along with the Log4J and MongoDB
-   Java Driver JARs, into the classpath of your Java application
+   Java Driver jars, into the classpath of your Java application
 
 4. Configure log4j as usual, referring to the log4j.properties.sample file for
    the specific configuration properties the appender supports
@@ -79,9 +79,9 @@ even the dates were saved in native data type, which may be confusing [6].
 See testTimestampStoredNatively in tests (TestMongoDbAppender.java) if you want to get an idea.
 
 # References
-[1] http://logging.apache.org/log4j/1.2/index.html
-[2] http://www.mongodb.org/
-[3] http://github.com/mongodb/mongo-java-driver/downloads
-[4] http://github.com/maxaf/daybreak
-[5] http://bsonspec.org/#/specification
-[6] http://groups.google.com/group/mongodb-user/browse_thread/thread/e59cbc8c9ba30411/af061b4bdbce5287
+* [1] http://logging.apache.org/log4j/1.2/index.html
+* [2] http://www.mongodb.org/
+* [3] http://github.com/mongodb/mongo-java-driver/downloads
+* [4] http://github.com/maxaf/daybreak
+* [5] http://bsonspec.org/#/specification
+* [6] http://groups.google.com/group/mongodb-user/browse_thread/thread/e59cbc8c9ba30411/af061b4bdbce5287
