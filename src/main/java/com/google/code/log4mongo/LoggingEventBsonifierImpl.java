@@ -185,7 +185,9 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier
             List     packageComponents   = new BasicDBList();
             String[] packageAndClassName = className.split("\\.");
             
-            packageComponents.addAll(Arrays.asList(Arrays.copyOf(packageAndClassName, packageAndClassName.length - 1)));
+            packageComponents.addAll(Arrays.asList(packageAndClassName));
+            // Requires Java 6
+            //packageComponents.addAll(Arrays.asList(Arrays.copyOf(packageAndClassName, packageAndClassName.length - 1)));
             
             if (packageComponents.size() > 0)
             {
