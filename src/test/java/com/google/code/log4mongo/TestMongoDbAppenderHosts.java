@@ -39,7 +39,8 @@ import com.wombatnation.privateer.Privateer;
  * assumes that server is listening on the default port (27017) on localhost.
  * <p>
  * Unless a replica set is configured with mongod instances listening on ports 27017
- * and 27018, errors will be logged. However, the tests will complete successfully.
+ * and 27018, errors will be logged. If a host is not listening on port 27018,
+ * testOneHostNonDefaultPort() will fail with an error.
  * 
  * To test on localhost with a replica set, do the following (either starting mongod
  * instances in separate terminals or start them with --fork):
