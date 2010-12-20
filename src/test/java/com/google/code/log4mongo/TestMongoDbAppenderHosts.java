@@ -51,7 +51,7 @@ import com.wombatnation.privateer.Privateer;
  * <li>$ mongod --replSet foo --smallfiles --port 27018 --dbpath /data/r1
  * <li>$ mongod --replSet foo --smallfiles --port 27019 --dbpath /data/r2
  * <li>$ mongo
- * <li>> config = {"_id": "foo", members:[{_id: 0, host: 'localhost:27017'},{_id: 1, host: 'localhost:27018'},{_id: 2, host: 'localhost:27018', arbiterOnly: true}]}
+ * <li>> config = {"_id": "foo", members:[{_id: 0, host: 'localhost:27017'},{_id: 1, host: 'localhost:27018'},{_id: 2, host: 'localhost:27019', arbiterOnly: true}]}
  * <li>> rs.initiate(config)
  * <li>Then wait about a minute until replica set is established. You can run rs.status() and look for direct confirmation.
  * </ul>
