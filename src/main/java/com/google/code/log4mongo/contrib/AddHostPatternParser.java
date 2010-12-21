@@ -22,30 +22,31 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.helpers.FormattingInfo;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.helpers.PatternConverter;
 import org.apache.log4j.helpers.PatternParser;
 import org.apache.log4j.spi.LoggingEvent;
 
 /**
- * Simple PatternParser that adds a single PatternConverter for logging some
- * extra info. The extra info returned from convert(LoggingEvent) will replace
- * %e in the pattern when an event is logged if the logging style is set to
- * PatternLayout.
+ * PatternParser that adds pattern converters for logging some useful
+ * host-related info, specifically:
+ * <ul>
+ * <li>hostname</li>
+ * <li>process ID of the JVM on this host</li>
+ * <li>IP address</li>
  */
 public class AddHostPatternParser extends PatternParser
 {
     static final char HOST_NAME = 'H';
     static final char VM_NAME = 'V';
-    static final char IP_ADDESS = 'I';
+    static final char IP_ADDRESS = 'I';
     static final Map<String, PatternConverter> converters;
     static
     {
     	Map<String, PatternConverter> tmp = new HashMap<String, PatternConverter>();
-    	tmp.put(String.valueOf(HOST_NAME), new AddHostPatternConverter());
-    	tmp.put(String.valueOf(VM_NAME), new AddVMNamePatternConverter());
-    	tmp.put(String.valueOf(IP_ADDESS), new AddIPAddressPatternConverter());
+    	tmp.put(String.valueOf(HOST_NAME), new HostPatternConverter());
+    	tmp.put(String.valueOf(VM_NAME), new VMNamePatternConverter());
+    	tmp.put(String.valueOf(IP_ADDRESS), new IPAddressPatternConverter());
     	
     	converters = Collections.unmodifiableMap(tmp);
     }
@@ -79,8 +80,8 @@ public class AddHostPatternParser extends PatternParser
             currentLiteral.setLength(0);
             addConverter(pc);
             break;
-        case IP_ADDESS:
-            pc = AddHostPatternParser.converters.get(String.valueOf(IP_ADDESS));
+        case IP_ADDRESS:
+            pc = AddHostPatternParser.converters.get(String.valueOf(IP_ADDRESS));
             currentLiteral.setLength(0);
             addConverter(pc);
             break;
@@ -91,77 +92,74 @@ public class AddHostPatternParser extends PatternParser
     }
 
     /**
-     * Custom PatternConverter for replacing a converter character (in this
-     * case, the character happens to be 'e') with some additional info. For a
-     * real application, this might be a session ID or some other piece of
-     * meaningful info.
+     * Custom PatternConverter for replacing converter character 'H' with
+     * the host name.
      */
-    private static class AddHostPatternConverter extends PatternConverter
+    private static class HostPatternConverter extends PatternConverter
     {
     	private String hostname = "";
     	
-    	AddHostPatternConverter()
+    	HostPatternConverter()
         {
             super();
             
             try
-			{
-				hostname = InetAddress.getLocalHost().getHostName();
-			} catch (UnknownHostException e)
-			{
-				LogLog.warn(e.getMessage());
-			}
+            {
+                hostname = InetAddress.getLocalHost().getHostName();
+            } catch (UnknownHostException e)
+            {
+                LogLog.warn(e.getMessage());
+            }
         }
 
-        /**
-         * Returns the string that will replace %e in the pattern string.
-         */
         public String convert(LoggingEvent event)
         {
             return hostname;
         }
     }
     
-    private static class AddVMNamePatternConverter extends PatternConverter
+    /**
+     * Custom PatternConverter for replacing converter character 'V' with
+     * the process ID of the JVM, formatted as pid@host.
+     */
+    private static class VMNamePatternConverter extends PatternConverter
     {
     	private String process = "";
     	
-    	AddVMNamePatternConverter()
+    	VMNamePatternConverter()
         {
             super();
             
             process = ManagementFactory.getRuntimeMXBean().getName();
         }
 
-        /**
-         * Returns the string that will replace %e in the pattern string.
-         */
         public String convert(LoggingEvent event)
         {
             return process;
         }
     }
     
-    private static class AddIPAddressPatternConverter extends PatternConverter
+    /**
+     * Custom PatternConverter for replacing converter character 'I' with
+     * the IP Address.
+     */
+    private static class IPAddressPatternConverter extends PatternConverter
     {
     	private String ipaddress = "";
     	
-    	AddIPAddressPatternConverter()
+    	IPAddressPatternConverter()
         {
             super();
             
             try
-			{
-				ipaddress = InetAddress.getLocalHost().getHostAddress();
-			} catch (UnknownHostException e)
-			{
-				LogLog.warn(e.getMessage());
-			}
+            {
+                ipaddress = InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException e)
+            {
+                LogLog.warn(e.getMessage());
+            }
         }
 
-        /**
-         * Returns the string that will replace %e in the pattern string.
-         */
         public String convert(LoggingEvent event)
         {
             return ipaddress;
