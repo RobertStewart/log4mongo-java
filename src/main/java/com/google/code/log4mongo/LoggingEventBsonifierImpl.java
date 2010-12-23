@@ -23,26 +23,26 @@ import com.mongodb.DBObject;
 public class LoggingEventBsonifierImpl implements LoggingEventBsonifier
 {
 	
-	private DBObject hostInfo = new BasicDBObject();
-	
-	public LoggingEventBsonifierImpl()
-	{
-		setupNetworkInfo();
-	}
-	
-	private void setupNetworkInfo()
-	{
-		hostInfo.put("process",  ManagementFactory.getRuntimeMXBean().getName());
-		try
-		{
-			hostInfo.put("name", InetAddress.getLocalHost().getHostName());
-			hostInfo.put("ip_address", InetAddress.getLocalHost().getHostAddress());
-		} catch (UnknownHostException e)
-		{
-			LogLog.warn(e.getMessage());
-		}
-	}
-	
+    private DBObject hostInfo = new BasicDBObject();
+
+    public LoggingEventBsonifierImpl()
+    {
+        setupNetworkInfo();
+    }
+
+    private void setupNetworkInfo()
+    {
+        hostInfo.put("process", ManagementFactory.getRuntimeMXBean().getName());
+        try
+        {
+            hostInfo.put("name", InetAddress.getLocalHost().getHostName());
+            hostInfo.put("ip", InetAddress.getLocalHost().getHostAddress());
+        } catch (UnknownHostException e)
+        {
+            LogLog.warn(e.getMessage());
+        }
+    }
+
     /**
      * BSONifies a single Log4J LoggingEvent object.
      * 
@@ -65,7 +65,6 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier
             
             addLocationInformation(result, loggingEvent.getLocationInformation());
             addThrowableInformation(result, loggingEvent.getThrowableInformation());
-            
             addHostnameInformation(result);
         }
         
@@ -95,6 +94,7 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier
      * @param bson          The BSON object to add the throwable info to <i>(must not be null)</i>.
      * @param throwableInfo The ThrowableInformation object to add to the BSON object <i>(may be null)</i>.
      */
+    @SuppressWarnings(value = "unchecked")
     protected void addThrowableInformation(DBObject bson, final ThrowableInformation throwableInfo)
     {
         if (throwableInfo != null)
@@ -119,6 +119,16 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier
                 bson.put("throwables", throwables);
             }
         }
+    }
+    
+    /**
+     * Adds the current process's host name, VM name and IP address
+     * 
+     * @param bson A BSON object containing host name, VM name and IP address
+     */
+    protected void addHostnameInformation(DBObject bson)
+    {
+        nullSafePut(bson, "host", hostInfo);
     }
     
     /**
@@ -199,6 +209,7 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier
      * @param className The class name to BSONify <i>(may be null)</i>.
      * @return The BSONified equivalent of the class name <i>(may be null)</i>.
      */
+    @SuppressWarnings(value = "unchecked")
     protected DBObject bsonifyClassName(final String className)
     {
         DBObject result = null;
@@ -252,16 +263,6 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier
                 bson.put(key, value);
             }
         }
-    }
-    
-    /**
-     * Adds the current process' host name and ip address
-     * 
-     */
-    
-    protected void addHostnameInformation(DBObject bson)
-    {
-    	nullSafePut(bson, "host", hostInfo);
     }
     
 }
