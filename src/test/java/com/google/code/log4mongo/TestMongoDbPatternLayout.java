@@ -200,9 +200,9 @@ public class TestMongoDbPatternLayout
     }
 
     @Test
-    public void testAddHostPatternLayou() throws Exception
+    public void testHostInfoPatternLayout() throws Exception
     {
-        PropertyConfigurator.configure(getAddHostPatternLayoutProperties());
+        PropertyConfigurator.configure(getHostInfoPatternLayoutProperties());
 
         MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(APPENDER_NAME);
 
@@ -300,13 +300,13 @@ public class TestMongoDbPatternLayout
         return props;
     }    
     
-    private Properties getAddHostPatternLayoutProperties()
+    private Properties getHostInfoPatternLayoutProperties()
     {
         Properties props = new Properties();
         props.put("log4j.rootLogger", "DEBUG, MongoDBPatternLayout");
         props.put("log4j.appender.MongoDBPatternLayout", "com.google.code.log4mongo.MongoDbPatternLayoutAppender");
         props.put("log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest");
-        props.put("log4j.appender.MongoDBPatternLayout.layout", "com.google.code.log4mongo.contrib.AddHostPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout.layout", "com.google.code.log4mongo.contrib.HostInfoPatternLayout");
         props.put("log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
                 "{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"array\":[\"%c{1}\",\"%m\"],\"host\":{\"name\":\"%H\", \"process\":\"%V\", \"ip_address\":\"%I\"}}");
         return props;

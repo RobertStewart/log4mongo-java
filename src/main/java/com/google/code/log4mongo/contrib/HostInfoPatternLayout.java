@@ -4,14 +4,14 @@ import org.apache.log4j.helpers.PatternParser;
 
 import com.google.code.log4mongo.MongoDbPatternLayout;
 
-public class AddHostPatternLayout extends MongoDbPatternLayout
+public class HostInfoPatternLayout extends MongoDbPatternLayout
 {
 
-	public AddHostPatternLayout()
+	public HostInfoPatternLayout()
 	{
 	}
 
-	public AddHostPatternLayout(String pattern)
+	public HostInfoPatternLayout(String pattern)
 	{
 		super(pattern);
 	}
@@ -20,9 +20,9 @@ public class AddHostPatternLayout extends MongoDbPatternLayout
 	{
 		PatternParser parser;
 		if (pattern == null)
-			parser = new AddHostPatternParser(DEFAULT_CONVERSION_PATTERN);
+			parser = new HostInfoPatternParser(DEFAULT_CONVERSION_PATTERN);
 		else
-			parser = new AddHostPatternParser(pattern);
+			parser = new HostInfoPatternParser(pattern);
 
 		return parser;
 	}

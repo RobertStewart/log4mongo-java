@@ -28,14 +28,14 @@ import org.apache.log4j.helpers.PatternParser;
 import org.apache.log4j.spi.LoggingEvent;
 
 /**
- * PatternParser that adds pattern converters for logging some useful
+ * PatternParser that adds pattern converters for logging useful
  * host-related info, specifically:
  * <ul>
  * <li>hostname</li>
- * <li>process ID of the JVM on this host</li>
+ * <li>VM name (which often includes the pid) of the JVM on this host</li>
  * <li>IP address</li>
  */
-public class AddHostPatternParser extends PatternParser
+public class HostInfoPatternParser extends PatternParser
 {
     static final char HOST_NAME = 'H';
     static final char VM_NAME = 'V';
@@ -51,7 +51,7 @@ public class AddHostPatternParser extends PatternParser
     	converters = Collections.unmodifiableMap(tmp);
     }
 
-    public AddHostPatternParser(String pattern)
+    public HostInfoPatternParser(String pattern)
     {
         super(pattern);
     }
@@ -71,17 +71,17 @@ public class AddHostPatternParser extends PatternParser
         switch (formatChar)
         {
         case HOST_NAME:
-            pc = AddHostPatternParser.converters.get(String.valueOf(HOST_NAME));
+            pc = HostInfoPatternParser.converters.get(String.valueOf(HOST_NAME));
             currentLiteral.setLength(0);
             addConverter(pc);
             break;
         case VM_NAME:
-            pc = AddHostPatternParser.converters.get(String.valueOf(VM_NAME));
+            pc = HostInfoPatternParser.converters.get(String.valueOf(VM_NAME));
             currentLiteral.setLength(0);
             addConverter(pc);
             break;
         case IP_ADDRESS:
-            pc = AddHostPatternParser.converters.get(String.valueOf(IP_ADDRESS));
+            pc = HostInfoPatternParser.converters.get(String.valueOf(IP_ADDRESS));
             currentLiteral.setLength(0);
             addConverter(pc);
             break;
@@ -120,7 +120,7 @@ public class AddHostPatternParser extends PatternParser
     
     /**
      * Custom PatternConverter for replacing converter character 'V' with
-     * the process ID of the JVM, formatted as pid@host.
+     * the VM name of the JVM, usually formatted as pid@host.
      */
     private static class VMNamePatternConverter extends PatternConverter
     {
