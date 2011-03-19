@@ -14,26 +14,26 @@ MongoDB document oriented database [2].
 
 More details are at the [Project site](http://log4mongo.org/display/PUB/Log4mongo+for+Java)
 
-# Author
-Peter Monks (pmonks@gmail.com)
+# Authors
+* Peter Monks (pmonks@gmail.com)
+* Robert Stewart (robert@wombatnation.com)
 
 # Contributors
 * Jozef Sevcik (sevcik@styxys.com)
-* Robert Stewart (robert@wombatnation.com)
 * Zach Bailey (znbailey@gmail.com)
 * Gabriel Eisbruch (gabrieleisbruch@gmail.com)
-
+* cskinfill
 
 # Pre-requisites
 * JDK 1.5+
-* MongoDB Server v1.6+ (tested with 1.6.3 and 1.7.3)
-* MongoDB Java Driver v2.0+, but not 2.2 (tested with 2.1 and 2.3)
+* MongoDB Server v1.6+ (tested with 1.7.5 and 1.8)
+* MongoDB Java Driver v2.0+, but not 2.2 (tested with 2.5)
 * Log4J 1.2+ (tested with 1.2.16 - note: tests won't work on earlier versions due to
 log4j API changes)
 * Privateer (used in unit tests - a copy is in the lib dir, in case you can't get it
 from the central Maven repo)
 
-## Additional notes:
+## Additional dependency notes:
 * Version 0.3.2 of log4mongo-java will work with MongoDB Java driver versions only up
 to 2.0. The 2.1 driver includes a source compatible, but binary incompatible, change to
 a DBCollection.insert() method used by log4mongo-java.
@@ -42,7 +42,7 @@ mongod not in a replica set configuration. The bug was fixed in the 2.3 driver.
 
 
 # Installation / Configuration
-1. Start local MongoDB servers running as replica set. This is required for the replica set
+1. Start local MongoDB servers running as a replica set. This is required for the replica set
    part of the unit tests. The --smallfiles arg makes the unit tests run about twice as fast,
    since databases are created and dropped several times, though it generally should not
    be used in production.
@@ -53,24 +53,26 @@ mongod not in a replica set configuration. The bug was fixed in the 2.3 driver.
 			$ mongod --replSet foo --smallfiles --port 27018 --dbpath /data/r1
 			$ mongod --replSet foo --smallfiles --port 27019 --dbpath /data/r2
 			
-2. If this it the first time you have set up this replica set, then initiate it from the mongo shell:
+2. If this is the first time you have set up this replica set, you'll need to initiate it from the mongo shell:
 			$ mongo
 			> config = {"_id": "foo", members:[{_id: 0, host: 'localhost:27017'},{_id: 1, host: 'localhost:27018'},{_id: 2, host: 'localhost:27019', arbiterOnly: true}]}
 			> rs.initiate(config)
 		
-3. Wait about a minute until the replica set is established. You can run rs.status() in the mongo shell to look for direct confirmation.
+3. Wait about a minute until the replica set is established. You can run rs.status() in the mongo shell to look for direct confirmation it is ready.
 
 4. Build the JAR file using Maven2. This will run all the unit tests.
        $ mvn clean package
 
 5. Deploy the target/log4mongo-java-x.y.jar file, along with the Log4J and MongoDB
-   Java Driver jars, into the classpath of your Java application
+   Java driver jars, into the classpath of your Java application
 
 6. Configure log4j as usual, referring to the log4j.properties.sample file for
    the specific configuration properties the appender supports
 
-The TestMongoDbAppenderHosts test case tests replica sets. See notes in that test case
+The TestMongoDbAppenderHosts test case tests logging to replica sets. See notes in that test case
 for starting multiple mongod instances as a replica set.
+
+
 
 # ToDos
 * More unit tests
