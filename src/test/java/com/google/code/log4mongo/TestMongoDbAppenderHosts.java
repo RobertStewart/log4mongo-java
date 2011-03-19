@@ -115,8 +115,7 @@ public class TestMongoDbAppenderHosts
     public void testTwoHostsTwoPorts() throws Exception
     {
         String hostname = "localhost localhost";
-        List<String> hosts = new ArrayList<String>();
-        hosts = Arrays.asList("localhost", "localhost");
+        List<String> hosts = Arrays.asList("localhost", "localhost");
         String port = "27017 27018";
         List<String>ports = Arrays.asList("27017", "27018");
         PropertyConfigurator.configure(getNonDefaultPortProperties(hostname, port));
@@ -124,7 +123,6 @@ public class TestMongoDbAppenderHosts
         MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(MONGODB_APPENDER_NAME);
 
         Mongo mongo = (Mongo) p.getField(appender, "mongo");
-        assertTrue(mongo.getAddress() != null);  // Should return the master
         List<ServerAddress> addresses = mongo.getAllAddress();
         assertTrue(addresses != null);
         for (ServerAddress address : addresses)
