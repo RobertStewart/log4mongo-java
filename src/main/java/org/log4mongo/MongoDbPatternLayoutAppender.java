@@ -15,7 +15,7 @@
  *
  */
 
-package com.google.code.log4mongo;
+package org.log4mongo;
 
 import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LoggingEvent;
@@ -36,20 +36,17 @@ import com.mongodb.util.JSON;
  * it usually doesn't make sense to use blank space padding with MongoDbPatternLayoutAppender.
  * <p>
  * The appender does <u>not</u> create any indexes on the data that's stored. If query performance
- * is required, indexes must be created externally (e.g., in the mongodb shell or an external reporting
+ * is required, indexes must be created externally (e.g., in the mongo shell or an external reporting
  * application).
  * 
  * @author Robert Stewart (robert@wombatnation.com)
  * @see <a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html">Log4J Appender Interface</a>
  * @see <a href="http://www.mongodb.org/">MongoDB</a>
- * @version $Id$
  */
-public class MongoDbPatternLayoutAppender extends MongoDbAppender
-{
+public class MongoDbPatternLayoutAppender extends MongoDbAppender {
     @Override
-    public boolean requiresLayout()
-    {
-        return (true);
+    public boolean requiresLayout() {
+	return (true);
     }
 
     /**
@@ -62,32 +59,27 @@ public class MongoDbPatternLayoutAppender extends MongoDbAppender
      * @param loggingEvent The LoggingEvent that will be formatted and stored in MongoDB
      */
     @Override
-    protected void append(final LoggingEvent loggingEvent)
-    {
-        if (isInitialized())
-        {
-            DBObject bson = null;
-            String json = layout.format(loggingEvent);
+    protected void append(final LoggingEvent loggingEvent) {
+	if (isInitialized()) {
+	    DBObject bson = null;
+	    String json = layout.format(loggingEvent);
 
-            if (json.length() > 0)
-            {
-                Object obj = JSON.parse(json);
-                if (obj instanceof DBObject)
-                {
-                    bson = (DBObject) obj;
-                }
-            }
+	    if (json.length() > 0) {
+		Object obj = JSON.parse(json);
+		if (obj instanceof DBObject) {
+		    bson = (DBObject) obj;
+		}
+	    }
 
-            if (bson != null)
-            {
-                try {
-                    getCollection().insert(bson);
-                } catch (MongoException e) {
-                    errorHandler.error("Failed to insert document to MongoDB", e,
-                            ErrorCode.WRITE_FAILURE);
-                }
-            }
-        }
+	    if (bson != null) {
+		try {
+		    getCollection().insert(bson);
+		} catch (MongoException e) {
+		    errorHandler.error("Failed to insert document to MongoDB",
+			    e, ErrorCode.WRITE_FAILURE);
+		}
+	    }
+	}
     }
 
 }

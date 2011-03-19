@@ -28,8 +28,7 @@ More details are at the [Project site](http://log4mongo.org/display/PUB/Log4mong
 * JDK 1.5+
 * MongoDB Server v1.6+ (tested with 1.7.5 and 1.8)
 * MongoDB Java Driver v2.0+, but not 2.2 (tested with 2.5)
-* Log4J 1.2+ (tested with 1.2.16 - note: tests won't work on earlier versions due to
-log4j API changes)
+* Log4J 1.2+ (tested with 1.2.16 - note: tests won't work on earlier versions due to Log4J API changes)
 * Privateer (used in unit tests - a copy is in the lib dir, in case you can't get it
 from the central Maven repo)
 
@@ -67,7 +66,9 @@ mongod not in a replica set configuration. The bug was fixed in the 2.3 driver.
    Java driver jars, into the classpath of your Java application
 
 6. Configure log4j as usual, referring to the log4j.properties.sample file for
-   the specific configuration properties the appender supports
+   the specific configuration properties the appender supports. The Java package for
+   the classes changed to org.log4mongo in the 0.7 release, so make sure you specify
+   the fully qualified class name of the appender class correctly.
 
 The TestMongoDbAppenderHosts test case tests logging to replica sets. See notes in that test case
 for starting multiple mongod instances as a replica set.

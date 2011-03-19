@@ -2,8 +2,8 @@
 log4j.rootLogger=error, MongoDB
 
 # MongoDB appender classname
-# To log with a PatternLayout, use com.google.code.log4mongo.MongoDbPatternLayoutAppender
-log4j.appender.MongoDB=com.google.code.log4mongo.MongoDbAppender
+# To log with a PatternLayout, use org.log4mongo.MongoDbPatternLayoutAppender
+log4j.appender.MongoDB=org.log4mongo.MongoDbAppender
 
 # MongoDB appender properties
 #  All are optional - defaults shown below (except for userName and password, which default to undefined)
@@ -20,7 +20,7 @@ log4j.appender.MongoDB.password=sesame
 #   If a custom PatternParser and custom PatternConverters are required to log additional data,
 #   the specified layout class must extend MongoDbPatternLayout. A ConversionPattern property
 #   should also be specified.
-#log4j.appender.MongoDB.layout=com.google.code.log4mongo.MongoDbPatternLayout
+#log4j.appender.MongoDB.layout=org.log4mongo.MongoDbPatternLayout
 
 # The ConversionPattern property is required only if MongoDbPatternLayoutAppender is used.
 #   The pattern must be a valid JSON document. The value will typically contain one or more

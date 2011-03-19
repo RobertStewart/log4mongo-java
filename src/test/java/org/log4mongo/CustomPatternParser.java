@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.google.code.log4mongo;
+package org.log4mongo;
 
 import org.apache.log4j.helpers.FormattingInfo;
 import org.apache.log4j.helpers.PatternConverter;
@@ -26,13 +26,11 @@ import org.apache.log4j.spi.LoggingEvent;
  * %e in the pattern when an event is logged if the logging style is set to
  * PatternLayout.
  */
-public class CustomPatternParser extends PatternParser
-{
+public class CustomPatternParser extends PatternParser {
     static final char EXTRA_CHAR = 'e';
 
-    public CustomPatternParser(String pattern)
-    {
-        super(pattern);
+    public CustomPatternParser(String pattern) {
+	super(pattern);
     }
 
     /**
@@ -44,20 +42,18 @@ public class CustomPatternParser extends PatternParser
      * 
      * @see org.apache.log4j.helpers.PatternParser#finalizeConverter(char)
      */
-    public void finalizeConverter(char formatChar)
-    {
-        PatternConverter pc = null;
-        switch (formatChar)
-        {
-        case EXTRA_CHAR:
-            pc = new ExtraInfoPatternConverter(formattingInfo);
-            currentLiteral.setLength(0);
-            addConverter(pc);
-            break;
+    public void finalizeConverter(char formatChar) {
+	PatternConverter pc = null;
+	switch (formatChar) {
+	case EXTRA_CHAR:
+	    pc = new ExtraInfoPatternConverter(formattingInfo);
+	    currentLiteral.setLength(0);
+	    addConverter(pc);
+	    break;
 
-        default:
-            super.finalizeConverter(formatChar);
-        }
+	default:
+	    super.finalizeConverter(formatChar);
+	}
     }
 
     /**
@@ -66,19 +62,16 @@ public class CustomPatternParser extends PatternParser
      * real application, this might be a session ID or some other piece of
      * meaningful info.
      */
-    private class ExtraInfoPatternConverter extends PatternConverter
-    {
-        ExtraInfoPatternConverter(FormattingInfo formatInfo)
-        {
-            super(formatInfo);
-        }
+    private class ExtraInfoPatternConverter extends PatternConverter {
+	ExtraInfoPatternConverter(FormattingInfo formatInfo) {
+	    super(formatInfo);
+	}
 
-        /**
-         * Returns the string that will replace %e in the pattern string.
-         */
-        public String convert(LoggingEvent event)
-        {
-            return "useful info";
-        }
+	/**
+	 * Returns the string that will replace %e in the pattern string.
+	 */
+	public String convert(LoggingEvent event) {
+	    return "useful info";
+	}
     }
 }

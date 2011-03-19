@@ -6,7 +6,7 @@ VERSION_NUMBER = `git describe --tags`.strip
 
 desc 'Log4J Appender for MongoDB'
 define 'log4mongo-java' do
-  project.group = 'com.google.code'
+  project.group = 'org.log4mongo'
   project.version = VERSION_NUMBER
   compile.with 'junit:junit:jar:4.8.2', 'log4j:log4j:jar:1.2.16', 'org.mongodb:mongo-java-driver:jar:2.5'
   package :jar, :id => 'log4mongo-java'

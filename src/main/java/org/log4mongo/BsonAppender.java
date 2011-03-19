@@ -15,7 +15,7 @@
  *
  */
 
-package com.google.code.log4mongo;
+package org.log4mongo;
 
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
@@ -40,13 +40,13 @@ import com.mongodb.DBObject;
  *   "method"     : "testLogWithChainedExceptions",
  *   "lineNumber" : "147",
  *   "loggerName" : {
- *                    "fullyQualifiedClassName" : "com.google.code.log4mongo.TestMongoDbAppender",
- *                    "package"                 : [ "com", "google", "code", "log4mongo" ],
+ *                    "fullyQualifiedClassName" : "org.log4mongo.TestMongoDbAppender",
+ *                    "package"                 : [ "org", "log4mongo" ],
  *                    "className"               : "TestMongoDbAppender"
  *                  },
  *   "class"      : {
- *                    "fullyQualifiedClassName" : "com.google.code.log4mongo.TestMongoDbAppender",
- *                    "package"                 : [ "com", "google", "code", "log4mongo" ],
+ *                    "fullyQualifiedClassName" : "org.log4mongo.TestMongoDbAppender",
+ *                    "package"                 : [ "org", "log4mongo" ],
  *                    "className"               : "TestMongoDbAppender"
  *                  },
  *   "throwables" : [
@@ -58,8 +58,8 @@ import com.mongodb.DBObject;
  *                                         "method"     : "testLogWithChainedExceptions",
  *                                         "lineNumber" : 147,
  *                                         "class"      : {
- *                                                          "fullyQualifiedClassName" : "com.google.code.log4mongo.TestMongoDbAppender",
- *                                                          "package"                 : [ "com", "google", "code", "log4mongo" ],
+ *                                                          "fullyQualifiedClassName" : "org.log4mongo.TestMongoDbAppender",
+ *                                                          "package"                 : [ "org", "log4mongo" ],
  *                                                          "className"               : "TestMongoDbAppender"
  *                                                        }
  *                                       },
@@ -83,8 +83,8 @@ import com.mongodb.DBObject;
  *                                         "method" : "testLogWithChainedExceptions",
  *                                         "lineNumber" : 145,
  *                                         "class" : {
- *                                                     "fullyQualifiedClassName" : "com.google.code.log4mongo.TestMongoDbAppender",
- *                                                     "package"                 : [ "com", "google", "code", "log4mongo" ],
+ *                                                     "fullyQualifiedClassName" : "org.log4mongo.TestMongoDbAppender",
+ *                                                     "package"                 : [ "org", "log4mongo" ],
  *                                                     "className"               : "TestMongoDbAppender"
  *                                                   }
  *                                       },
@@ -97,18 +97,14 @@ import com.mongodb.DBObject;
  *
  * @see <a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html">Log4J Appender Interface</a>
  * @see <a href="http://www.mongodb.org/">MongoDB</a>
- * @version $Id$
  */
-public abstract class BsonAppender
-    extends AppenderSkeleton
-{
+public abstract class BsonAppender extends AppenderSkeleton {
     private LoggingEventBsonifier bsonifier = new LoggingEventBsonifierImpl();
     
     /**
      * @see org.apache.log4j.Appender#requiresLayout()
      */
-    public boolean requiresLayout()
-    {
+    public boolean requiresLayout() {
         return(false);
     }
 
@@ -116,8 +112,7 @@ public abstract class BsonAppender
      * @see org.apache.log4j.AppenderSkeleton#append(org.apache.log4j.spi.LoggingEvent)
      */
     @Override
-    protected void append(final LoggingEvent loggingEvent)
-    {
+    protected void append(final LoggingEvent loggingEvent) {
         DBObject bson = bsonifier.bsonify(loggingEvent);
         append(bson);
     }
