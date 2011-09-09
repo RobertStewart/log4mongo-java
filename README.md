@@ -44,37 +44,42 @@ mongod not in a replica set configuration. The bug was fixed in the 2.3 driver.
 If you downloaded a pre-built jar file, skip to step 4.
 
 1. Start local MongoDB servers running as a replica set. This is required for the replica set
-   part of the unit tests. The --smallfiles arg makes the unit tests run about twice as fast,
-   since databases are created and dropped several times, though it generally should not
-   be used in production.
-			$ mkdir -p /data/r0
-			$ mkdir -p /data/r1
-			$ mkdir -p /data/r2
-			$ mongod --replSet foo --smallfiles --port 27017 --dbpath /data/r0
-			$ mongod --replSet foo --smallfiles --port 27018 --dbpath /data/r1
-			$ mongod --replSet foo --smallfiles --port 27019 --dbpath /data/r2
-			
+part of the unit tests. The --smallfiles arg makes the unit tests run about twice as fast,
+since databases are created and dropped several times, though it generally should not
+be used in production.
+<pre>
+	$ mkdir -p /data/r0
+	$ mkdir -p /data/r1
+	$ mkdir -p /data/r2
+	$ mongod --replSet foo --smallfiles --port 27017 --dbpath /data/r0
+	$ mongod --replSet foo --smallfiles --port 27018 --dbpath /data/r1
+	$ mongod --replSet foo --smallfiles --port 27019 --dbpath /data/r2
+</pre>
+
 2. If this is the first time you have set up this replica set, you'll need to initiate it from the mongo shell:
-			$ mongo
-			> config = {"_id": "foo", members:[{_id: 0, host: 'localhost:27017'},{_id: 1, host: 'localhost:27018'},{_id: 2, host: 'localhost:27019', arbiterOnly: true}]}
-			> rs.initiate(config)
-		
+<pre>
+    $ mongo
+    > config = {"_id": "foo", members:[{_id: 0, host: 'localhost:27017'},{_id: 1, host: 'localhost:27018'},{_id: 2, host: 'localhost:27019', arbiterOnly: true}]}
+    > rs.initiate(config)
+</pre>
+
 3. Wait about a minute until the replica set is established. You can run rs.status() in the mongo shell to look for direct confirmation it is ready.
 
 4. Build the JAR file using Maven2. The following command will run all the unit tests.
-       $ mvn clean package
+<pre>
+	$ mvn clean package
+</pre>
 
 5. Deploy the target/log4mongo-java-x.y.jar file, along with the Log4J and MongoDB
-   Java driver jars, into the classpath of your Java application
+Java driver jars, into the classpath of your Java application
 
 6. Configure log4j as usual, referring to the log4j.properties.sample file for
-   the specific configuration properties the appender supports. The Java package for
-   the classes changed to org.log4mongo in the 0.7 release, so make sure you specify
-   the fully qualified class name of the appender class correctly.
+the specific configuration properties the appender supports. The Java package for
+the classes changed to org.log4mongo in the 0.7 release, so make sure you specify
+the fully qualified class name of the appender class correctly.
 
 The TestMongoDbAppenderHosts test case tests logging to replica sets. See notes in that test case
 for starting multiple mongod instances as a replica set.
-
 
 
 # ToDos
