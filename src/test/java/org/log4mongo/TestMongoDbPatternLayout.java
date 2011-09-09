@@ -130,7 +130,7 @@ public class TestMongoDbPatternLayout {
 	appender.setCollection(collection);
 
 	assertEquals(0L, countLogEntries());
-	String msg = "\"Quotes\" \"embedded\"";
+	String msg = "\"Quotes\" ' \"embedded\"";
 	log.warn(msg);
 	assertEquals(1L, countLogEntries());
 	assertEquals(1L, countLogEntriesAtLevel("WARN"));
@@ -226,6 +226,30 @@ public class TestMongoDbPatternLayout {
 	assertNotNull(hostinfo.get("process"));
 	assertEquals(InetAddress.getLocalHost().getHostName(), hostinfo.get("name"));
 	assertEquals(InetAddress.getLocalHost().getHostAddress(), hostinfo.get("ip_address"));
+    }
+    
+    @Test
+    public void testBackslashInMessage() {
+	PropertyConfigurator.configure(getValidPatternLayoutProperties());
+
+	MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger()
+		.getAppender(APPENDER_NAME);
+
+	collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(
+		TEST_COLLECTION_NAME);
+	appender.setCollection(collection);
+
+	assertEquals(0L, countLogEntries());
+	String msg = "c:\\users\\some_file\\";
+	log.warn(msg);
+	assertEquals(1L, countLogEntries());
+	assertEquals(1L, countLogEntriesAtLevel("WARN"));
+
+	// verify log entry content
+	DBObject entry = collection.findOne();
+	assertNotNull(entry);
+	assertEquals("WARN", entry.get("level"));
+	assertEquals(msg, entry.get("message"));
     }
 
     @Test
