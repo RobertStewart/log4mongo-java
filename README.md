@@ -26,8 +26,8 @@ More details are at the [Project site](http://log4mongo.org/display/PUB/Log4mong
 
 # Pre-requisites
 * JDK 1.5+
-* MongoDB Server v1.6+ (tested with 1.7.5 and 1.8)
-* MongoDB Java Driver v2.0+, but not 2.2 (tested with 2.5)
+* MongoDB Server v1.6+ (tested with 1.8.3)
+* MongoDB Java Driver v2.0+, but not 2.2 (tested with 2.5.3 and 2.6.5)
 * Log4J 1.2+ (tested with 1.2.16 - note: tests won't work on earlier versions due to Log4J API changes)
 * Privateer (used in unit tests - a copy is in the lib dir, in case you can't get it
 from the central Maven repo)
@@ -40,7 +40,9 @@ a DBCollection.insert() method used by log4mongo-java.
 mongod not in a replica set configuration. The bug was fixed in the 2.3 driver.
 
 
-# Installation / Configuration
+# Installation / Build / Configuration
+If you downloaded a pre-built jar file, skip to step 4.
+
 1. Start local MongoDB servers running as a replica set. This is required for the replica set
    part of the unit tests. The --smallfiles arg makes the unit tests run about twice as fast,
    since databases are created and dropped several times, though it generally should not
@@ -59,7 +61,7 @@ mongod not in a replica set configuration. The bug was fixed in the 2.3 driver.
 		
 3. Wait about a minute until the replica set is established. You can run rs.status() in the mongo shell to look for direct confirmation it is ready.
 
-4. Build the JAR file using Maven2. This will run all the unit tests.
+4. Build the JAR file using Maven2. The following command will run all the unit tests.
        $ mvn clean package
 
 5. Deploy the target/log4mongo-java-x.y.jar file, along with the Log4J and MongoDB
