@@ -11,7 +11,7 @@ MongoDB document oriented database [2].
 * MongoDbAppender - Stores a BSONified version of the Log4J LoggingEvent
 * MongoDbPatternLayoutAppender - Uses standard Log4J pattern layout, parser
     and converter classes to store a log message as a custom-formatted document
-
+    
 More details are at the [Project site](http://log4mongo.org/display/PUB/Log4mongo+for+Java)
 
 # Authors
@@ -39,7 +39,7 @@ a DBCollection.insert() method used by log4mongo-java.
 * The MongoDB Java driver 2.2 includes a bug that causes a NullPointerException if you run
 mongod not in a replica set configuration. The bug was fixed in the 2.3 driver.
 
-
+	
 # Installation / Build / Configuration
 If you downloaded a pre-built jar file, skip to step 4.
 
@@ -47,28 +47,25 @@ If you downloaded a pre-built jar file, skip to step 4.
 part of the unit tests. The --smallfiles arg makes the unit tests run about twice as fast,
 since databases are created and dropped several times, though it generally should not
 be used in production.
-<pre>
-	$ mkdir -p /data/r0
-	$ mkdir -p /data/r1
-	$ mkdir -p /data/r2
-	$ mongod --replSet foo --smallfiles --port 27017 --dbpath /data/r0
-	$ mongod --replSet foo --smallfiles --port 27018 --dbpath /data/r1
-	$ mongod --replSet foo --smallfiles --port 27019 --dbpath /data/r2
-</pre>
-
+    
+        $ mkdir -p /data/r0
+        $ mkdir -p /data/r1
+        $ mkdir -p /data/r2
+        $ mongod --replSet foo --smallfiles --port 27017 --dbpath /data/r0
+        $ mongod --replSet foo --smallfiles --port 27018 --dbpath /data/r1
+        $ mongod --replSet foo --smallfiles --port 27019 --dbpath /data/r2
+    
 2. If this is the first time you have set up this replica set, you'll need to initiate it from the mongo shell:
-<pre>
-    $ mongo
-    > config = {"_id": "foo", members:[{_id: 0, host: 'localhost:27017'},{_id: 1, host: 'localhost:27018'},{_id: 2, host: 'localhost:27019', arbiterOnly: true}]}
-    > rs.initiate(config)
-</pre>
+
+        $ mongo
+        > config = {"_id": "foo", members:[{_id: 0, host: 'localhost:27017'},{_id: 1, host: 'localhost:27018'},{_id: 2, host: 'localhost:27019', arbiterOnly: true}]}
+        > rs.initiate(config)
 
 3. Wait about a minute until the replica set is established. You can run rs.status() in the mongo shell to look for direct confirmation it is ready.
 
 4. Build the JAR file using Maven2. The following command will run all the unit tests.
-<pre>
-	$ mvn clean package
-</pre>
+
+        $ mvn clean package
 
 5. Deploy the target/log4mongo-java-x.y.jar file, along with the Log4J and MongoDB
 Java driver jars, into the classpath of your Java application
