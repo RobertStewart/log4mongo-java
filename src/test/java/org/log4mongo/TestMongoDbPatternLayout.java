@@ -29,6 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -245,11 +246,25 @@ public class TestMongoDbPatternLayout {
 	assertEquals(1L, countLogEntries());
 	assertEquals(1L, countLogEntriesAtLevel("WARN"));
 
+	String msgDoubleBackslash = "c:\\\\users\\\\some_file\\\\";
+	log.info(msgDoubleBackslash);
+	assertEquals(2L, countLogEntries());
+	assertEquals(1L, countLogEntriesAtLevel("INFO"));
+
 	// verify log entry content
-	DBObject entry = collection.findOne();
+	DBObject queryObj = new BasicDBObject();
+	queryObj.put("level", "WARN");
+	DBObject entry = collection.findOne(queryObj);
 	assertNotNull(entry);
 	assertEquals("WARN", entry.get("level"));
 	assertEquals(msg, entry.get("message"));
+	
+	queryObj = new BasicDBObject();
+	queryObj.put("level", "INFO");
+	entry = collection.findOne(queryObj);
+	assertNotNull(entry);
+	assertEquals("INFO", entry.get("level"));
+	assertEquals(msgDoubleBackslash, entry.get("message"));
     }
 
     @Test
