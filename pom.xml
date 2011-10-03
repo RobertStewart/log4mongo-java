@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
   <name>log4mongo-java</name>
   <description>Log4J Appender for MongoDB</description>
-  <version>0.7.0</version>
+  <version>0.7.1-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>

@@ -26,5 +26,8 @@ import com.mongodb.DBObject;
  * LoggingEvent. LoggingEventBsonifierImpl is the default implementation.
  */
 public interface LoggingEventBsonifier {
-    DBObject bsonify(LoggingEvent loggingEvent);
+	DBObject bsonify(LoggingEvent loggingEvent);
+
+	void setAppendMDCVariables(boolean appendMDCVariables);
+	boolean getAppendMDCVariables();
 }
