@@ -7,16 +7,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * This extended MongoDbAppender is designed so you can add top
- * level elements to each logging entry. I think that users can also extend MongoDbAppender themselves in
- * order to add the top level elements.
- *
- * Rational: My use case is that many different code bases will use a common
- * appender for unified logs, and the common elements in a unified logging system
- * should be consistent such as application, eventType etc...
- * So by adding a property called rootLevelProperties with a key=value
- * pair of elements to be added to the root level log.
- *
+ * This appender is designed so you can add top level elements to each logging
+ * entry. Users can also extend MongoDbAppender themselves in order to add the
+ * top level elements.
+ * 
+ * Use case: A desire to use a common appender for unified logs across different
+ * code bases, such that commonly logged elements be consistent, such as
+ * application, eventType, etc. This is enabled by adding a property called
+ * rootLevelProperties with a key=value list of elements to be added to the root
+ * level log. See log4j.properties.sample for an example.
+ * 
  * @author Mick Knutson (http://www.baselogic.com)
  */
 public class ExtendedMongoDbAppender extends MongoDbAppender {
@@ -24,7 +24,6 @@ public class ExtendedMongoDbAppender extends MongoDbAppender {
     private DBObject constants;
 
     private Map<String, String> rootProperties = new LinkedHashMap<String, String>();
-
 
     /**
      * @see org.apache.log4j.AppenderSkeleton#activateOptions()
@@ -36,13 +35,14 @@ public class ExtendedMongoDbAppender extends MongoDbAppender {
     }
 
     /**
-     * Initialize Top level JSON properties
-     * Allow users to create custom properties to be added
-     * to the top level JSON log.
+     * Initialize custom top level elements to appear in a log event
+     * <p>
+     * Allows users to create custom properties to be added to the top level
+     * log event.
      */
-    public void initTopLevelProperties(){
+    public void initTopLevelProperties() {
         constants = new BasicDBObject();
-        if(!rootProperties.isEmpty()){
+        if (!rootProperties.isEmpty()){
             constants.putAll(rootProperties);
         }
     }
@@ -54,12 +54,11 @@ public class ExtendedMongoDbAppender extends MongoDbAppender {
      * @param rootLevelProperties
      */
     public void setRootLevelProperties(String rootLevelProperties) {
-        for(String keyValue : rootLevelProperties.split(" *& *")) {
+        for (String keyValue : rootLevelProperties.split(" *& *")) {
             String[] pairs = keyValue.split(" *= *", 2);
             rootProperties.put(pairs[0], pairs.length == 1 ? "" : pairs[1]);
         }
     }
-
 
     /**
      * @param bson The BSON object to insert into a MongoDB database collection.

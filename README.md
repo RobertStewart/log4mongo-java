@@ -9,6 +9,7 @@ This library provides Log4J Appenders [1] that write log events to the
 MongoDB document oriented database [2].
 
 * MongoDbAppender - Stores a BSONified version of the Log4J LoggingEvent
+* ExtendedMongoDbAppender - Extends MongoDbAppender by allowing you to add top level elements
 * MongoDbPatternLayoutAppender - Uses standard Log4J pattern layout, parser
     and converter classes to store a log message as a custom-formatted document
     
@@ -23,6 +24,7 @@ More details are at the [Project site](http://log4mongo.org/display/PUB/Log4mong
 * Zach Bailey (znbailey@gmail.com)
 * Gabriel Eisbruch (gabrieleisbruch@gmail.com)
 * cskinfill
+* Mick Knutson
 
 # Pre-requisites
 * JDK 1.5+

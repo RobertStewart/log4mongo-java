@@ -49,7 +49,7 @@ public class TestExtendedMongoDbAppender {
     private final static String MONGODB_APPENDER_NAME = "MongoDB";
 
     private final static String LOG4J_PROPS = "src/test/resources/log4j_extended.properties";
-    //private final static String LOG4J_PROPS = "src/test/resources/log4j.xml";
+    //private final static String LOG4J_PROPS = "src/test/resources/log4j_extended.xml";
 
     private final Mongo mongo;
     private final ExtendedMongoDbAppender appender;
@@ -104,7 +104,6 @@ public class TestExtendedMongoDbAppender {
         assertEquals(0L, countLogEntries());
 
         Map<String, String> obj = new HashMap<String, String>() {
-            //Unnamed Block.
             {
                 put("key1", "value1");
                 put("key2", "value2");
@@ -126,7 +125,6 @@ public class TestExtendedMongoDbAppender {
     @Test
     public void testObjectAsMessage() throws Exception {
         assertEquals(0L, countLogEntries());
-
 
         log.warn("Testing Object in Message");
 

@@ -29,5 +29,5 @@ log4j.appender.MongoDB.password=sesame
 #   sub-documents. Values can be strings or arrays.
 #log4j.appender.MongoDB.layout.ConversionPattern={"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}","level":"%p","class":"%c{1}","message":"%m"}
 
-# Add optional root level elements to each log
+# Add optional root level elements to each log event
 #log4j.appender.MongoDB.rootLevelProperties=applicationName=MyProject&eventType=Development
