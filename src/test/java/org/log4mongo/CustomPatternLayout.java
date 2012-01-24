@@ -25,16 +25,16 @@ public class CustomPatternLayout extends MongoDbPatternLayout {
     }
 
     public CustomPatternLayout(String pattern) {
-	super(pattern);
+        super(pattern);
     }
 
     public PatternParser createPatternParser(String pattern) {
-	PatternParser parser;
-	if (pattern == null)
-	    parser = new CustomPatternParser(DEFAULT_CONVERSION_PATTERN);
-	else
-	    parser = new CustomPatternParser(pattern);
+        PatternParser parser;
+        if (pattern == null)
+            parser = new CustomPatternParser(DEFAULT_CONVERSION_PATTERN);
+        else
+            parser = new CustomPatternParser(pattern);
 
-	return parser;
+        return parser;
     }
 }
