@@ -81,9 +81,9 @@ public class MongoDbAppender extends BsonAppender {
             }
 
             List<ServerAddress> addresses = getServerAddresses(hostname, port);
-        	mongo = getMongo(addresses);
+            mongo = getMongo(addresses);
 
-			DB database = getDatabase(mongo, databaseName);
+            DB database = getDatabase(mongo, databaseName);
 
             if (userName != null && userName.trim().length() > 0) {
                 if (!database.authenticate(userName, password.toCharArray())) {
@@ -103,24 +103,24 @@ public class MongoDbAppender extends BsonAppender {
     }
     
     /*
-     * This method could be override to provide the DB instance from existing connection.
+     * This method could be overridden to provide the DB instance from an existing connection.
      */
     protected DB getDatabase(Mongo mongo, String databaseName) {
-		return mongo.getDB(databaseName);
-	}
+        return mongo.getDB(databaseName);
+    }
 
-    
     /*
-     * This method could be override to provide the Mongo instance from existing connection.
+     * This method could be overridden to provide the Mongo instance from an existing connection.
      */
-	protected Mongo getMongo(List<ServerAddress> addresses) {
-		if (addresses.size() < 2) {
-			return new Mongo(addresses.get(0));
-		} else {
-			// Replication set
-			return new Mongo(addresses);
-		}
-	}
+    protected Mongo getMongo(List<ServerAddress> addresses) {
+        if (addresses.size() < 2) {
+            return new Mongo(addresses.get(0));
+        } else {
+            // Replication set
+            return new Mongo(addresses);
+        }
+    }
+    
     /**
      * Note: this method is primarily intended for use by the unit tests.
      * 
@@ -149,7 +149,7 @@ public class MongoDbAppender extends BsonAppender {
      * @return The hostname of the MongoDB server <i>(will not be null, empty or blank)</i>.
      */
     public String getHostname() {
-        return (hostname);
+        return hostname;
     }
 
     /**
@@ -169,7 +169,7 @@ public class MongoDbAppender extends BsonAppender {
      * @return The port of the MongoDB server <i>(will be > 0)</i>.
      */
     public String getPort() {
-        return (port);
+        return port;
     }
 
     /**
@@ -189,7 +189,7 @@ public class MongoDbAppender extends BsonAppender {
      * @return The database used in the MongoDB server <i>(will not be null, empty or blank)</i>.
      */
     public String getDatabaseName() {
-        return (databaseName);
+        return databaseName;
     }
 
     /**
@@ -211,7 +211,7 @@ public class MongoDbAppender extends BsonAppender {
      *         empty or blank)</i>.
      */
     public String getCollectionName() {
-        return (collectionName);
+        return collectionName;
     }
 
     /**
@@ -232,7 +232,7 @@ public class MongoDbAppender extends BsonAppender {
      * @return The userName used to authenticate with MongoDB <i>(may be null)</i>.
      */
     public String getUserName() {
-        return (userName);
+        return userName;
     }
 
     /**
@@ -282,7 +282,7 @@ public class MongoDbAppender extends BsonAppender {
      * @return The MongoDB collection to which events are logged.
      */
     protected DBCollection getCollection() {
-        return (collection);
+        return collection;
     }
 
     /**

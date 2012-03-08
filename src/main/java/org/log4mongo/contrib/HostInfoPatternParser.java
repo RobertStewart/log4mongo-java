@@ -42,12 +42,12 @@ public class HostInfoPatternParser extends PatternParser {
     static final char IP_ADDRESS = 'I';
     static final Map<String, PatternConverter> converters;
     static {
-	Map<String, PatternConverter> tmp = new HashMap<String, PatternConverter>();
-	tmp.put(String.valueOf(HOST_NAME), new HostPatternConverter());
-	tmp.put(String.valueOf(VM_NAME), new VMNamePatternConverter());
-	tmp.put(String.valueOf(IP_ADDRESS), new IPAddressPatternConverter());
+        Map<String, PatternConverter> tmp = new HashMap<String, PatternConverter>();
+        tmp.put(String.valueOf(HOST_NAME), new HostPatternConverter());
+        tmp.put(String.valueOf(VM_NAME), new VMNamePatternConverter());
+        tmp.put(String.valueOf(IP_ADDRESS), new IPAddressPatternConverter());
 
-	converters = Collections.unmodifiableMap(tmp);
+        converters = Collections.unmodifiableMap(tmp);
     }
 
     public HostInfoPatternParser(String pattern) {
@@ -64,28 +64,27 @@ public class HostInfoPatternParser extends PatternParser {
      * @see org.apache.log4j.helpers.PatternParser#finalizeConverter(char)
      */
     public void finalizeConverter(char formatChar) {
-	PatternConverter pc = null;
-	switch (formatChar) {
-	case HOST_NAME:
-	    pc = HostInfoPatternParser.converters.get(String.valueOf(HOST_NAME));
-	    currentLiteral.setLength(0);
-	    addConverter(pc);
-	    break;
-	case VM_NAME:
-	    pc = HostInfoPatternParser.converters.get(String.valueOf(VM_NAME));
-	    currentLiteral.setLength(0);
-	    addConverter(pc);
-	    break;
-	case IP_ADDRESS:
-	    pc = HostInfoPatternParser.converters.get(String
-		    .valueOf(IP_ADDRESS));
-	    currentLiteral.setLength(0);
-	    addConverter(pc);
-	    break;
+        PatternConverter pc = null;
+        switch (formatChar) {
+        case HOST_NAME:
+            pc = HostInfoPatternParser.converters.get(String.valueOf(HOST_NAME));
+            currentLiteral.setLength(0);
+            addConverter(pc);
+            break;
+        case VM_NAME:
+            pc = HostInfoPatternParser.converters.get(String.valueOf(VM_NAME));
+            currentLiteral.setLength(0);
+            addConverter(pc);
+            break;
+        case IP_ADDRESS:
+            pc = HostInfoPatternParser.converters.get(String.valueOf(IP_ADDRESS));
+            currentLiteral.setLength(0);
+            addConverter(pc);
+            break;
 
-	default:
-	    super.finalizeConverter(formatChar);
-	}
+        default:
+            super.finalizeConverter(formatChar);
+        }
     }
 
     /**
@@ -93,60 +92,60 @@ public class HostInfoPatternParser extends PatternParser {
      * the host name.
      */
     private static class HostPatternConverter extends PatternConverter {
-	private String hostname = "";
+        private String hostname = "";
 
-	HostPatternConverter() {
-	    super();
+        HostPatternConverter() {
+            super();
 
-	    try {
-		hostname = InetAddress.getLocalHost().getHostName();
-	    } catch (UnknownHostException e) {
-		LogLog.warn(e.getMessage());
-	    }
-	}
+            try {
+                hostname = InetAddress.getLocalHost().getHostName();
+            } catch (UnknownHostException e) {
+                LogLog.warn(e.getMessage());
+            }
+        }
 
-	public String convert(LoggingEvent event) {
-	    return hostname;
-	}
+        public String convert(LoggingEvent event) {
+            return hostname;
+        }
     }
-    
+
     /**
      * Custom PatternConverter for replacing converter character 'V' with
      * the VM name of the JVM, usually formatted as pid@host.
      */
     private static class VMNamePatternConverter extends PatternConverter {
-	private String process = "";
+        private String process = "";
 
-	VMNamePatternConverter() {
-	    super();
+        VMNamePatternConverter() {
+            super();
 
-	    process = ManagementFactory.getRuntimeMXBean().getName();
-	}
+            process = ManagementFactory.getRuntimeMXBean().getName();
+        }
 
-	public String convert(LoggingEvent event) {
-	    return process;
-	}
+        public String convert(LoggingEvent event) {
+            return process;
+        }
     }
-    
+
     /**
      * Custom PatternConverter for replacing converter character 'I' with
      * the IP Address.
      */
     private static class IPAddressPatternConverter extends PatternConverter {
-	private String ipaddress = "";
+        private String ipaddress = "";
 
-	IPAddressPatternConverter() {
-	    super();
+        IPAddressPatternConverter() {
+            super();
 
-	    try {
-		ipaddress = InetAddress.getLocalHost().getHostAddress();
-	    } catch (UnknownHostException e) {
-		LogLog.warn(e.getMessage());
-	    }
-	}
+            try {
+                ipaddress = InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException e) {
+                LogLog.warn(e.getMessage());
+            }
+        }
 
-	public String convert(LoggingEvent event) {
-	    return ipaddress;
-	}
+        public String convert(LoggingEvent event) {
+            return ipaddress;
+        }
     }
 }

@@ -27,16 +27,16 @@ public class HostInfoPatternLayout extends MongoDbPatternLayout {
     }
 
     public HostInfoPatternLayout(String pattern) {
-	super(pattern);
+        super(pattern);
     }
 
     public PatternParser createPatternParser(String pattern) {
-	PatternParser parser;
-	if (pattern == null)
-	    parser = new HostInfoPatternParser(DEFAULT_CONVERSION_PATTERN);
-	else
-	    parser = new HostInfoPatternParser(pattern);
+        PatternParser parser;
+        if (pattern == null)
+            parser = new HostInfoPatternParser(DEFAULT_CONVERSION_PATTERN);
+        else
+            parser = new HostInfoPatternParser(pattern);
 
-	return parser;
+        return parser;
     }
 }
