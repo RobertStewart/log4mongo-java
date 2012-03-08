@@ -25,13 +25,14 @@ More details are at the [Project site](http://log4mongo.org/display/PUB/Log4mong
 * Gabriel Eisbruch (gabrieleisbruch@gmail.com)
 * cskinfill
 * Mick Knutson
+* Jay Patel
 
 # Pre-requisites
 * JDK 1.5+
-* MongoDB Server v1.6+ (tested with 1.8.3)
-* MongoDB Java Driver v2.0+, but not 2.2 (tested with 2.5.3 and 2.6.5)
+* MongoDB Server v1.6+ (tested with 2.0.3)
+* MongoDB Java Driver v2.0+, but not 2.2 (tested with 2.7.3)
 * Log4J 1.2+ (tested with 1.2.16 - note: tests won't work on earlier versions due to Log4J API changes)
-* Privateer (used in unit tests - a copy is in the lib dir, in case you can't get it
+* Privateer (used only in unit tests - a copy is in the lib dir, in case you can't get it
 from the central Maven repo)
 
 ## Additional dependency notes:
