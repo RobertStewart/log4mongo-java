@@ -43,7 +43,7 @@ import com.mongodb.WriteConcern;
  * @author Peter Monks (pmonks@gmail.com)
  * @see <a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html">Log4J
  *      Appender Interface</a>
- * @see <a href="http://www.mongodb.org/">MongoDB</a> 
+ * @see <a href="http://www.mongodb.org/">MongoDB</a>
  */
 public class MongoDbAppender extends BsonAppender {
     private final static String DEFAULT_MONGO_DB_HOSTNAME = "localhost";
@@ -118,7 +118,7 @@ public class MongoDbAppender extends BsonAppender {
         if (addresses.size() < 2) {
             return new Mongo(addresses.get(0));
         } else {
-            // Replication set
+            // Replica set
             return new Mongo(addresses);
         }
     }
@@ -130,10 +130,8 @@ public class MongoDbAppender extends BsonAppender {
      *            The MongoDB collection to use when logging events.
      */
     public void setCollection(final DBCollection collection) {
-        // PRECONDITIONS
-        assert collection != null : "collection must not be null.";
-
-        // Body
+        assert collection != null : "collection must not be null";
+        
         this.collection = collection;
     }
 
@@ -159,11 +157,9 @@ public class MongoDbAppender extends BsonAppender {
      *            The MongoDB hostname to set <i>(must not be null, empty or blank)</i>.
      */
     public void setHostname(final String hostname) {
-        // PRECONDITIONS
         assert hostname != null : "hostname must not be null";
         assert hostname.trim().length() > 0 : "hostname must not be empty or blank";
 
-        // Body
         this.hostname = hostname;
     }
 
@@ -179,11 +175,9 @@ public class MongoDbAppender extends BsonAppender {
      *            The port to set <i>(must not be null, empty or blank)</i>.
      */
     public void setPort(final String port) {
-        // PRECONDITIONS
         assert port != null : "port must not be null";
         assert port.trim().length() > 0 : "port must not be empty or blank";
 
-        // Body
         this.port = port;
     }
 
@@ -200,11 +194,9 @@ public class MongoDbAppender extends BsonAppender {
      *            blank)</i>.
      */
     public void setDatabaseName(final String databaseName) {
-        // PRECONDITIONS
         assert databaseName != null : "database must not be null";
         assert databaseName.trim().length() > 0 : "database must not be empty or blank";
 
-        // Body
         this.databaseName = databaseName;
     }
 
@@ -222,11 +214,9 @@ public class MongoDbAppender extends BsonAppender {
      *            null, empty or blank)</i>.
      */
     public void setCollectionName(final String collectionName) {
-        // PRECONDITIONS
         assert collectionName != null : "collection must not be null";
         assert collectionName.trim().length() > 0 : "collection must not be empty or blank";
 
-        // Body
         this.collectionName = collectionName;
     }
 
@@ -254,8 +244,7 @@ public class MongoDbAppender extends BsonAppender {
     }
     
     /**
-     * @return
-     * 				Gets the writeConcern setting for Mongo.
+     * @return the writeConcern setting for Mongo.
      */
     public String getWriteConcern() {
 		return writeConcern;
@@ -263,16 +252,16 @@ public class MongoDbAppender extends BsonAppender {
     
     /**
      * @param writeConcern
-     * 				The WriteConcern setting for Mongo Inserts.<i>(may be null). If null, set to default of dbCollection's writeConcern.</i>
+     * 				The WriteConcern setting for Mongo.<i>(may be null). If null, set to default of dbCollection's writeConcern.</i>
      */
     public void setWriteConcern(final String writeConcern) {
     	this.writeConcern = writeConcern;
-		this.concern =  new WriteConcern(writeConcern);
+		concern = new WriteConcern(writeConcern);
 	}
     
     public WriteConcern getConcern() {
-    	if(this.concern == null){
-    		this.concern = getCollection().getWriteConcern();
+    	if (concern == null) {
+    		concern = getCollection().getWriteConcern();
     	}
 		return concern;
 	}

@@ -24,8 +24,6 @@ import static org.junit.Assert.fail;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 
-import junit.framework.Assert;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
@@ -107,7 +105,7 @@ public class TestMongoDbAppender {
     @Test
     public void testWriteConcern() throws Exception{
     	testInitialized();
-    	Assert.assertEquals(appender.getWriteConcern(),"FSYNC_SAFE");
+    	assertEquals(appender.getWriteConcern(), "FSYNC_SAFE");
     }
 
     @Test
