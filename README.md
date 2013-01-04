@@ -29,8 +29,8 @@ More details are at the [Project site](http://log4mongo.org/display/PUB/Log4mong
 
 # Pre-requisites
 * JDK 1.5+
-* MongoDB Server v1.6+ (tested with 2.0.3)
-* MongoDB Java Driver v2.0+, but not 2.2 (tested with 2.7.3)
+* MongoDB Server v2.0+ (tested with 2.2.2)
+* MongoDB Java Driver v2.7+ (tested with 2.10.1)
 * Log4J 1.2+ (tested with 1.2.16 - note: tests won't work on earlier versions due to Log4J API changes)
 * Privateer (used only in unit tests - a copy is in the lib dir, in case you can't get it
 from the central Maven repo)
@@ -39,29 +39,27 @@ from the central Maven repo)
 * Version 0.3.2 of log4mongo-java will work with MongoDB Java driver versions only up
 to 2.0. The 2.1 driver includes a source compatible, but binary incompatible, change to
 a DBCollection.insert() method used by log4mongo-java.
-* The MongoDB Java driver 2.2 includes a bug that causes a NullPointerException if you run
-mongod not in a replica set configuration. The bug was fixed in the 2.3 driver.
 
 	
 # Installation / Build / Configuration
-If you downloaded a pre-built jar file, skip to step 4.
+If you downloaded a pre-built jar file, skip step 4.
 
 1. Start local MongoDB servers running as a replica set. This is required for the replica set
 part of the unit tests. The --smallfiles arg makes the unit tests run about twice as fast,
 since databases are created and dropped several times, though it generally should not
-be used in production.
+be used in production. The --noprealloc and --nojournal options are also to speed up tests
+and should not generally be used in production.
     
-        $ mkdir -p /data/r0
-        $ mkdir -p /data/r1
-        $ mkdir -p /data/r2
-        $ mongod --replSet foo --smallfiles --port 27017 --dbpath /data/r0
-        $ mongod --replSet foo --smallfiles --port 27018 --dbpath /data/r1
-        $ mongod --replSet foo --smallfiles --port 27019 --dbpath /data/r2
+        $ mkdir -p /data/r{0,1,2}
+        $ mongod --replSet foo --smallfiles --noprealloc --nojournal --port 27017 --dbpath /data/r0
+        $ mongod --replSet foo --smallfiles --noprealloc --nojournal --port 27018 --dbpath /data/r1
+        $ mongod --replSet foo --smallfiles --noprealloc --nojournal --port 27019 --dbpath /data/r2
     
 2. If this is the first time you have set up this replica set, you'll need to initiate it from the mongo shell:
 
         $ mongo
         > config = {"_id": "foo", members:[{_id: 0, host: 'localhost:27017'},{_id: 1, host: 'localhost:27018'},{_id: 2, host: 'localhost:27019', arbiterOnly: true}]}
+        > config = {"_id": "foo", members:[{_id: 0, host: '127.0.0.1:27017'},{_id: 1, host: '127.0.0.1:27018'},{_id: 2, host: '127.0.0.1:27019', arbiterOnly: true}]}
         > rs.initiate(config)
 
 3. Wait about a minute until the replica set is established. You can run rs.status() in the mongo shell to look for direct confirmation it is ready.
