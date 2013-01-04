@@ -256,7 +256,7 @@ public class MongoDbAppender extends BsonAppender {
      */
     public void setWriteConcern(final String writeConcern) {
     	this.writeConcern = writeConcern;
-		concern = new WriteConcern(writeConcern);
+		concern = WriteConcern.valueOf(writeConcern);
 	}
     
     public WriteConcern getConcern() {
