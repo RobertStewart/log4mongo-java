@@ -101,12 +101,6 @@ public class TestMongoDbAppender {
         if (!appender.isInitialized())
             fail();
     }
-    
-    @Test
-    public void testWriteConcern() throws Exception{
-    	testInitialized();
-    	assertEquals(appender.getWriteConcern(), "FSYNC_SAFE");
-    }
 
     @Test
     public void testSingleLogEntry() throws Exception {
