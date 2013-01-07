@@ -304,7 +304,11 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
         if (value != null) {
             if (value instanceof String) {
                 String stringValue = (String) value;
-
+                if (stringValue.trim().length() > 0) {
+                    bson.put(key, stringValue);
+                }
+            } else if (value instanceof StringBuffer) {
+                String stringValue = ((StringBuffer) value).toString();
                 if (stringValue.trim().length() > 0) {
                     bson.put(key, stringValue);
                 }
