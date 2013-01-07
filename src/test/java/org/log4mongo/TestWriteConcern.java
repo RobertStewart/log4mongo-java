@@ -239,8 +239,8 @@ public class TestWriteConcern {
             log.warn("Warn entry");
         }
         long dur = System.currentTimeMillis() - now;
-        System.out.println("Milliseconds for MongoDbAppender to log " + NUM_MESSAGES + " messages:"
-                + dur);
+        System.out.println("Milliseconds for MongoDbAppender with write concern "
+                + appender.getWriteConcern() + " to log " + NUM_MESSAGES + " messages:" + dur);
         assertEquals(NUM_MESSAGES + 1, countLogEntries());
     }
 
