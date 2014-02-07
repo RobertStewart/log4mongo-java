@@ -33,7 +33,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
+import com.mongodb.Mongo;
 
 /**
  * JUnit unit tests for PatternLayout style logging.
@@ -56,22 +56,22 @@ public class TestMongoDbPatternLayout {
 
     private static final String APPENDER_NAME = "MongoDBPatternLayout";
 
-    private final MongoClient mongo;
+    private final Mongo mongo;
     private DBCollection collection;
 
     public TestMongoDbPatternLayout() throws Exception {
-        mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
     }
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        MongoClient mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
         mongo.dropDatabase(TEST_DATABASE_NAME);
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        MongoClient mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
         mongo.dropDatabase(TEST_DATABASE_NAME);
     }
 

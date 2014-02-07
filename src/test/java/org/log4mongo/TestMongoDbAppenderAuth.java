@@ -24,7 +24,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.mongodb.DBCollection;
-import com.mongodb.MongoClient;
+import com.mongodb.Mongo;
 
 /**
  * Authentication-related JUnit unit tests for MongoDbAppender.
@@ -45,22 +45,22 @@ public class TestMongoDbAppenderAuth {
     private final static String username = "open";
     private final static String password = "sesame";
 
-    private final MongoClient mongo;
+    private final Mongo mongo;
     private DBCollection collection;
 
     public TestMongoDbAppenderAuth() throws Exception {
-        mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
     }
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        MongoClient mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
         mongo.dropDatabase(TEST_DATABASE_NAME);
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        MongoClient mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
         mongo.dropDatabase(TEST_DATABASE_NAME);
     }
 
