@@ -119,7 +119,7 @@ public class TestExtendedMongoDbAppender {
         DBObject entry = collection.findOne();
         assertNotNull(entry);
         assertEquals("WARN", entry.get("level"));
-        assertEquals("Testing Object in Message: {key2=value2, key1=value1}", entry.get("message"));
+        assertEquals("Testing Object in Message: {key1=value1, key2=value2}", entry.get("message"));
     }
 
     @Test
