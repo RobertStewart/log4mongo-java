@@ -66,7 +66,7 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
     // MDC Properties
     private static final String KEY_MDC_PROPERTIES = "properties";
 
-    private DBObject hostInfo = new BasicDBObject();
+    private final DBObject hostInfo = new BasicDBObject();
 
     public LoggingEventBsonifierImpl() {
         setupNetworkInfo();
@@ -122,10 +122,13 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
         if (props != null && props.size() > 0) {
 
             BasicDBObject mdcProperties = new BasicDBObject();
-
+            String key;
             // Copy MDC properties into document
             for (Map.Entry<Object, Object> entry : props.entrySet()) {
-                nullSafePut(mdcProperties, entry.getKey().toString(), entry.getValue().toString());
+                key = (entry.getKey().toString().contains("."))
+                        ? entry.getKey().toString().replaceAll("\\.", "_")
+                        : entry.getKey().toString();
+                nullSafePut(mdcProperties, key, entry.getValue().toString());
             }
             bson.put(KEY_MDC_PROPERTIES, mdcProperties);
         }
