@@ -290,6 +290,18 @@ public class TestMongoDbAppender {
         assertEquals(ManagementFactory.getRuntimeMXBean().getName(), hostinfo.get("process"));
     }
 
+    @Test
+    /**
+     * Added to verify fix to GitHub issue #24.
+     */
+    public void testLogObject() throws Exception {
+        Object object = new Object();
+
+        assertEquals(0L, countLogEntries());
+        log.error(object);
+        assertEquals(1L, countLogEntries());
+    }
+
     private long countLogEntries() {
         return (collection.getCount());
     }

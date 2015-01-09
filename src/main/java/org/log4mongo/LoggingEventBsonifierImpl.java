@@ -98,7 +98,7 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
             result.put(KEY_TIMESTAMP, new Date(loggingEvent.getTimeStamp()));
             nullSafePut(result, KEY_LEVEL, loggingEvent.getLevel().toString());
             nullSafePut(result, KEY_THREAD, loggingEvent.getThreadName());
-            nullSafePut(result, KEY_MESSAGE, loggingEvent.getMessage());
+            nullSafePut(result, KEY_MESSAGE, loggingEvent.getRenderedMessage());
             nullSafePut(result, KEY_LOGGER_NAME, bsonifyClassName(loggingEvent.getLoggerName()));
 
             addMDCInformation(result, loggingEvent.getProperties());
