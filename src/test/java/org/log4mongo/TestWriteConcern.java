@@ -16,296 +16,302 @@
 
 package org.log4mongo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.junit.After;
+import org.bson.Document;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+
+import static org.junit.Assert.*;
+
 
 /**
  * JUnit unit tests for using write concerns with MongoDbAppender.
- * 
+ * <p>
  * When using FSYNCED, logging is well over a magnitude slower than UNACKNOWLEDGED.
- * 
+ * <p>
  * Note: these tests require that a MongoDB server is running, and (by default) assumes that server
  * is listening on the default port (27017) on localhost.
  */
 public class TestWriteConcern {
-    private final static Logger log = Logger.getLogger(TestWriteConcern.class);
 
-    private final static String TEST_MONGO_SERVER_HOSTNAME = "localhost";
-    private final static int TEST_MONGO_SERVER_PORT = 27017;
-    private final static String TEST_DATABASE_NAME = "log4mongotest";
-    private final static String TEST_COLLECTION_NAME = "logevents";
+	private final static Logger log = Logger.getLogger( TestWriteConcern.class );
 
-    private final static String MONGODB_APPENDER_NAME = "MongoDB";
+	private final static String TEST_MONGO_SERVER_HOSTNAME = "localhost";
 
-    private final static String LOG4J_PROPS = "src/test/resources/log4j_write_concern.properties";
+	private final static int    TEST_MONGO_SERVER_PORT     = 27017;
 
-    private final Mongo mongo;
-    private final MongoDbAppender appender;
-    private DBCollection collection;
+	private final static String TEST_DATABASE_NAME         = "log4mongotest";
 
-    public TestWriteConcern() throws Exception {
-        PropertyConfigurator.configure(LOG4J_PROPS);
-        mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
-        appender = (MongoDbAppender) Logger.getRootLogger().getAppender(MONGODB_APPENDER_NAME);
-    }
+	private final static String TEST_COLLECTION_NAME       = "logevents";
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
-        mongo.dropDatabase(TEST_DATABASE_NAME);
-    }
+	private final static String MONGODB_APPENDER_NAME = "MongoDB";
 
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
-        mongo.dropDatabase(TEST_DATABASE_NAME);
-    }
+	private final static String LOG4J_PROPS = "src/test/resources/log4j_write_concern.properties";
 
-    @Before
-    public void setUp() throws Exception {
-        // Ensure both the appender and the JUnit test use the same collection
-        // object - provides consistency across reads (JUnit) & writes (Log4J)
-        collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
-        collection.drop();
-        appender.setCollection(collection);
+	private final MongoClient     mongo;
 
-        mongo.getDB(TEST_DATABASE_NAME).requestStart();
-    }
+	private final MongoDbAppender appender;
 
-    @After
-    public void tearDown() throws Exception {
-        mongo.getDB(TEST_DATABASE_NAME).requestDone();
-    }
+	private       MongoCollection collection;
 
-    @Test
-    public void testInitialized() throws Exception {
-        if (!appender.isInitialized())
-            fail();
-    }
-    
-    @Test
-    public void testWriteConcern() throws Exception {
-        testInitialized();
-    	assertEquals(appender.getWriteConcern(), "FSYNCED");
-    }
+	public TestWriteConcern() throws Exception {
+		PropertyConfigurator.configure( LOG4J_PROPS );
+		mongo = new MongoClient( TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT );
+		appender = (MongoDbAppender) Logger.getRootLogger().getAppender( MONGODB_APPENDER_NAME );
+	}
 
-    @Test
-    public void testSingleLogEntry() throws Exception {
-        log.trace("Trace entry");
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		MongoClient mongo = new MongoClient( TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT );
+		mongo.dropDatabase( TEST_DATABASE_NAME );
+	}
 
-        assertEquals(1L, countLogEntries());
-        assertEquals(1L, countLogEntriesAtLevel("trace"));
-        assertEquals(0L, countLogEntriesAtLevel("debug"));
-        assertEquals(0L, countLogEntriesAtLevel("info"));
-        assertEquals(0L, countLogEntriesAtLevel("warn"));
-        assertEquals(0L, countLogEntriesAtLevel("error"));
-        assertEquals(0L, countLogEntriesAtLevel("fatal"));
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		MongoClient mongo = new MongoClient( TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT );
+		mongo.dropDatabase( TEST_DATABASE_NAME );
+	}
 
-        // verify log entry content
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertEquals("TRACE", entry.get("level"));
-        assertEquals("Trace entry", entry.get("message"));
-    }
+	@Before
+	public void setUp() throws Exception {
+		// Ensure both the appender and the JUnit test use the same collection
+		// object - provides consistency across reads (JUnit) & writes (Log4J)
+		collection = mongo.getDatabase( TEST_DATABASE_NAME ).getCollection( TEST_COLLECTION_NAME );
+		collection.drop();
+		appender.setCollection( collection );
+	}
 
-    @Test
-    public void testTimestampStoredNatively() throws Exception {
-        log.debug("Debug entry");
+	@Test
+	public void testInitialized() throws Exception {
+		if ( !appender.isInitialized() ) {
+			fail();
+		}
+	}
 
-        assertEquals(1L, countLogEntries());
+	@Test
+	public void testWriteConcern() throws Exception {
+		testInitialized();
+		assertEquals( appender.getWriteConcern(), "FSYNCED" );
+	}
 
-        // verify timestamp - presence and data type
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertTrue("Timestamp is not present in logged entry", entry.containsField("timestamp"));
-        assertTrue("Timestamp of logged entry is not stored as native date",
-                (entry.get("timestamp") instanceof java.util.Date));
-    }
+	@Test
+	public void testSingleLogEntry() throws Exception {
+		log.trace( "Trace entry" );
 
-    @Test
-    public void testAllLevels() throws Exception {
-        log.trace("Trace entry");
-        log.debug("Debug entry");
-        log.info("Info entry");
-        log.warn("Warn entry");
-        log.error("Error entry");
-        log.fatal("Fatal entry");
+		assertEquals( 1L, countLogEntries() );
+		assertEquals( 1L, countLogEntriesAtLevel( "trace" ) );
+		assertEquals( 0L, countLogEntriesAtLevel( "debug" ) );
+		assertEquals( 0L, countLogEntriesAtLevel( "info" ) );
+		assertEquals( 0L, countLogEntriesAtLevel( "warn" ) );
+		assertEquals( 0L, countLogEntriesAtLevel( "error" ) );
+		assertEquals( 0L, countLogEntriesAtLevel( "fatal" ) );
 
-        assertEquals(6L, countLogEntries());
-        assertEquals(1L, countLogEntriesAtLevel("trace"));
-        assertEquals(1L, countLogEntriesAtLevel("debug"));
-        assertEquals(1L, countLogEntriesAtLevel("info"));
-        assertEquals(1L, countLogEntriesAtLevel("warn"));
-        assertEquals(1L, countLogEntriesAtLevel("error"));
-        assertEquals(1L, countLogEntriesAtLevel("fatal"));
-    }
+		// verify log entry content
+		FindIterable <DBObject> entries = collection.find( DBObject.class );
+		for ( DBObject entry : entries ) {
+			assertNotNull( entry );
+			assertEquals( "TRACE", entry.get( "level" ) );
+			assertEquals( "Trace entry", entry.get( "message" ) );
+		}
+	}
 
-    @Test
-    public void testLogWithException() throws Exception {
-        log.error("Error entry", new RuntimeException("Here is an exception!"));
+	@Test
+	public void testTimestampStoredNatively() throws Exception {
+		log.debug( "Debug entry" );
 
-        assertEquals(1L, countLogEntries());
-        assertEquals(1L, countLogEntriesAtLevel("error"));
+		assertEquals( 1L, countLogEntries() );
 
-        // verify log entry content
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertEquals("ERROR", entry.get("level"));
-        assertEquals("Error entry", entry.get("message"));
+		// verify timestamp - presence and data type
+		FindIterable <DBObject> entries = collection.find( DBObject.class );
+		for ( DBObject entry : entries ) {
+			assertNotNull( entry );
+			assertTrue( "Timestamp is not present in logged entry", entry.containsField( "timestamp" ) );
+			assertTrue( "Timestamp of logged entry is not stored as native date",
+					( entry.get( "timestamp" ) instanceof java.util.Date ) );
+		}
+	}
 
-        // verify throwable presence and content
-        assertTrue("Throwable is not present in logged entry", entry.containsField("throwables"));
-        BasicDBList throwables = (BasicDBList) entry.get("throwables");
-        assertEquals(1, throwables.size());
+	@Test
+	public void testAllLevels() throws Exception {
+		log.trace( "Trace entry" );
+		log.debug( "Debug entry" );
+		log.info( "Info entry" );
+		log.warn( "Warn entry" );
+		log.error( "Error entry" );
+		log.fatal( "Fatal entry" );
 
-        DBObject throwableEntry = (DBObject) throwables.get("0");
-        assertTrue("Throwable message is not present in logged entry",
-                throwableEntry.containsField("message"));
-        assertEquals("Here is an exception!", throwableEntry.get("message"));
-    }
+		assertEquals( 6L, countLogEntries() );
+		assertEquals( 1L, countLogEntriesAtLevel( "trace" ) );
+		assertEquals( 1L, countLogEntriesAtLevel( "debug" ) );
+		assertEquals( 1L, countLogEntriesAtLevel( "info" ) );
+		assertEquals( 1L, countLogEntriesAtLevel( "warn" ) );
+		assertEquals( 1L, countLogEntriesAtLevel( "error" ) );
+		assertEquals( 1L, countLogEntriesAtLevel( "fatal" ) );
+	}
 
-    @Test
-    public void testLogWithChainedExceptions() throws Exception {
-        Exception rootCause = new RuntimeException("I'm the real culprit!");
+	@Test
+	public void testLogWithException() throws Exception {
+		log.error( "Error entry", new RuntimeException( "Here is an exception!" ) );
 
-        log.error("Error entry", new RuntimeException("I'm an innocent bystander.", rootCause));
+		assertEquals( 1L, countLogEntries() );
+		assertEquals( 1L, countLogEntriesAtLevel( "error" ) );
 
-        assertEquals(1L, countLogEntries());
-        assertEquals(1L, countLogEntriesAtLevel("error"));
+		// verify log entry content
+		FindIterable<DBObject> entries = collection.find(DBObject.class);
+		for ( DBObject entry : entries ) {
+			assertNotNull( entry );
+			assertEquals( "ERROR", entry.get( "level" ) );
+			assertEquals( "Error entry", entry.get( "message" ) );
 
-        // verify log entry content
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertEquals("ERROR", entry.get("level"));
-        assertEquals("Error entry", entry.get("message"));
+			// verify throwable presence and content
+			assertTrue( "Throwable is not present in logged entry", entry.containsField( "throwables" ) );
+			BasicDBList throwables = (BasicDBList) entry.get( "throwables" );
+			assertEquals( 1, throwables.size() );
 
-        // verify throwable presence and content
-        assertTrue("Throwable is not present in logged entry", entry.containsField("throwables"));
-        BasicDBList throwables = (BasicDBList) entry.get("throwables");
-        assertEquals(2, throwables.size());
+			DBObject throwableEntry = (DBObject) throwables.get( "0" );
+			assertTrue( "Throwable message is not present in logged entry",
+					throwableEntry.containsField( "message" ) );
+			assertEquals( "Here is an exception!", throwableEntry.get( "message" ) );
+		}
+	}
 
-        DBObject rootEntry = (DBObject) throwables.get("0");
-        assertTrue("Throwable message is not present in logged entry",
-                rootEntry.containsField("message"));
-        assertEquals("I'm an innocent bystander.", rootEntry.get("message"));
+	@Test
+	public void testLogWithChainedExceptions() throws Exception {
+		Exception rootCause = new RuntimeException( "I'm the real culprit!" );
 
-        DBObject chainedEntry = (DBObject) throwables.get("1");
-        assertTrue("Throwable message is not present in logged entry",
-                chainedEntry.containsField("message"));
-        assertEquals("I'm the real culprit!", chainedEntry.get("message"));
-    }
+		log.error( "Error entry", new RuntimeException( "I'm an innocent bystander.", rootCause ) );
 
-    @Test
-    public void testQuotesInMessage() {
-        assertEquals(0L, countLogEntries());
-        log.warn("Quotes\" \"embedded");
-        assertEquals(1L, countLogEntries());
-        assertEquals(1L, countLogEntriesAtLevel("WARN"));
+		assertEquals( 1L, countLogEntries() );
+		assertEquals( 1L, countLogEntriesAtLevel( "error" ) );
 
-        // verify log entry content
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertEquals("WARN", entry.get("level"));
-        assertEquals("Quotes\" \"embedded", entry.get("message"));
-    }
+		// verify log entry content
+		FindIterable<DBObject> entries = collection.find(DBObject.class);
+		for ( DBObject entry : entries ) {
+			assertNotNull( entry );
+			assertEquals( "ERROR", entry.get( "level" ) );
+			assertEquals( "Error entry", entry.get( "message" ) );
 
-    @Test
-    public void testPerformance() throws Exception {
-        // Log one event to minimize start up effects on performance
-        log.warn("Warn entry");
+			// verify throwable presence and content
+			assertTrue( "Throwable is not present in logged entry", entry.containsField( "throwables" ) );
+			BasicDBList throwables = (BasicDBList) entry.get( "throwables" );
+			assertEquals( 2, throwables.size() );
 
-        long NUM_MESSAGES = 100;
-        long now = System.currentTimeMillis();
-        for (long i = 0; i < NUM_MESSAGES; i++) {
-            log.warn("Warn entry");
-        }
-        long dur = System.currentTimeMillis() - now;
-        System.out.println("Milliseconds for MongoDbAppender with write concern "
-                + appender.getWriteConcern() + " to log " + NUM_MESSAGES + " messages:" + dur);
-        assertEquals(NUM_MESSAGES + 1, countLogEntries());
-    }
+			DBObject rootEntry = (DBObject) throwables.get( "0" );
+			assertTrue( "Throwable message is not present in logged entry",
+					rootEntry.containsField( "message" ) );
+			assertEquals( "I'm an innocent bystander.", rootEntry.get( "message" ) );
 
-    @Test
-    public void testRegularLoggerRecordsLoggerNameCorrectly() {
-        log.info("From an unwrapped logger");
+			DBObject chainedEntry = (DBObject) throwables.get( "1" );
+			assertTrue( "Throwable message is not present in logged entry",
+					chainedEntry.containsField( "message" ) );
+			assertEquals( "I'm the real culprit!", chainedEntry.get( "message" ) );
+		}
+	}
 
-        assertEquals(1, countLogEntries());
-        assertEquals(1, countLogEntriesAtLevel("info"));
-        assertEquals(
-                1,
-                countLogEntriesWhere(BasicDBObjectBuilder.start()
-                        .add("loggerName.className", "TestWriteConcern").get()));
-        assertEquals(
-                1,
-                countLogEntriesWhere(BasicDBObjectBuilder.start()
-                        .add("class.className", "TestWriteConcern").get()));
-    }
+	@Test
+	public void testQuotesInMessage() {
+		assertEquals( 0L, countLogEntries() );
+		log.warn( "Quotes\" \"embedded" );
+		assertEquals( 1L, countLogEntries() );
+		assertEquals( 1L, countLogEntriesAtLevel( "WARN" ) );
 
-    @Test
-    public void testWrappedLoggerRecordsLoggerNameCorrectly() {
-        WrappedLogger wrapped = new WrappedLogger(log);
-        wrapped.info("From a wrapped logger");
+		// verify log entry content
+		FindIterable<DBObject> entries = collection.find(DBObject.class);
+		for ( DBObject entry : entries ) {
+			assertNotNull( entry );
+			assertEquals( "WARN", entry.get( "level" ) );
+			assertEquals( "Quotes\" \"embedded", entry.get( "message" ) );
+		}
+	}
 
-        assertEquals(1, countLogEntries());
-        assertEquals(1, countLogEntriesAtLevel("info"));
-        assertEquals(
-                1,
-                countLogEntriesWhere(BasicDBObjectBuilder.start()
-                        .add("loggerName.className", "TestWriteConcern").get()));
-        assertEquals(
-                1,
-                countLogEntriesWhere(BasicDBObjectBuilder.start()
-                        .add("class.className", "WrappedLogger").get()));
-    }
+	@Test
+	public void testPerformance() throws Exception {
+		// Log one event to minimize start up effects on performance
+		log.warn( "Warn entry" );
 
-    @Test
-    public void testHostInfoRecords() throws Exception {
-        assertEquals(0L, countLogEntries());
-        log.warn("Testing hostinfo");
-        assertEquals(1L, countLogEntries());
-        assertEquals(1L, countLogEntriesAtLevel("WARN"));
+		long NUM_MESSAGES = 100;
+		long now          = System.currentTimeMillis();
+		for ( long i = 0; i < NUM_MESSAGES; i++ ) {
+			log.warn( "Warn entry" );
+		}
+		long dur = System.currentTimeMillis() - now;
+		System.out.println( "Milliseconds for MongoDbAppender with write concern "
+				+ appender.getWriteConcern() + " to log " + NUM_MESSAGES + " messages:" + dur );
+		assertEquals( NUM_MESSAGES + 1, countLogEntries() );
+	}
 
-        // verify log entry content
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertEquals("WARN", entry.get("level"));
-        assertEquals("Testing hostinfo", entry.get("message"));
-        assertNotNull(entry.get("host"));
-        DBObject hostinfo = (DBObject) entry.get("host");
-        assertNotNull(hostinfo.get("process"));
-        assertEquals(InetAddress.getLocalHost().getHostName(), hostinfo.get("name"));
-        assertEquals(ManagementFactory.getRuntimeMXBean().getName(), hostinfo.get("process"));
-    }
+	@Test
+	public void testRegularLoggerRecordsLoggerNameCorrectly() {
+		log.info( "From an unwrapped logger" );
 
-    private long countLogEntries() {
-        return (collection.getCount());
-    }
+		assertEquals( 1, countLogEntries() );
+		assertEquals( 1, countLogEntriesAtLevel( "info" ) );
+		assertEquals(
+				1,
+				countLogEntriesWhere( Document.parse( "{ 'loggerName.className' : 'TestWriteConcern' }" ) ) );
+		assertEquals(
+				1,
+				countLogEntriesWhere( Document.parse( "{ 'class.className' : 'TestWriteConcern' }" ) ) );
+	}
 
-    private long countLogEntriesAtLevel(final String level) {
-        return (countLogEntriesWhere(BasicDBObjectBuilder.start().add("level", level.toUpperCase())
-                .get()));
-    }
+	@Test
+	public void testWrappedLoggerRecordsLoggerNameCorrectly() {
+		WrappedLogger wrapped = new WrappedLogger( log );
+		wrapped.info( "From a wrapped logger" );
 
-    private long countLogEntriesWhere(final DBObject whereClause) {
-        return collection.getCount(whereClause);
-    }
+		assertEquals( 1, countLogEntries() );
+		assertEquals( 1, countLogEntriesAtLevel( "info" ) );
+		assertEquals(
+				1,
+				countLogEntriesWhere( Document.parse( "{ 'loggerName.className' : 'TestWriteConcern' }" ) ) );
+		assertEquals(
+				1,
+				countLogEntriesWhere( Document.parse( "{ 'class.className' : 'WrappedLogger' }" ) ) );
+	}
+
+	@Test
+	public void testHostInfoRecords() throws Exception {
+		assertEquals( 0L, countLogEntries() );
+		log.warn( "Testing hostinfo" );
+		assertEquals( 1L, countLogEntries() );
+		assertEquals( 1L, countLogEntriesAtLevel( "WARN" ) );
+
+		// verify log entry content
+		FindIterable<DBObject> entries = collection.find(DBObject.class);
+		for ( DBObject entry : entries ) {
+			assertNotNull( entry );
+			assertEquals( "WARN", entry.get( "level" ) );
+			assertEquals( "Testing hostinfo", entry.get( "message" ) );
+			assertNotNull( entry.get( "host" ) );
+			DBObject hostinfo = (DBObject) entry.get( "host" );
+			assertNotNull( hostinfo.get( "process" ) );
+			assertEquals( InetAddress.getLocalHost().getHostName(), hostinfo.get( "name" ) );
+			assertEquals( ManagementFactory.getRuntimeMXBean().getName(), hostinfo.get( "process" ) );
+		}
+	}
+
+	private long countLogEntries() {
+		return ( collection.count() );
+	}
+
+	private long countLogEntriesAtLevel( final String level ) {
+		return ( countLogEntriesWhere( Document.parse( "{ 'level' : '" + level.toUpperCase() + "' }" ) ) );
+	}
+
+	private long countLogEntriesWhere( final Document whereClause ) {
+		return collection.count( whereClause );
+	}
+
 }

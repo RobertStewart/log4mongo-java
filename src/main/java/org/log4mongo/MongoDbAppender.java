@@ -17,364 +17,370 @@
 
 package org.log4mongo;
 
-import java.net.UnknownHostException;
+import com.mongodb.*;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.apache.log4j.spi.ErrorCode;
+import org.bson.BSONObject;
+import org.bson.Document;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.apache.log4j.spi.ErrorCode;
-
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
-import com.mongodb.MongoException;
-import com.mongodb.ServerAddress;
-import com.mongodb.WriteConcern;
 
 /**
  * Log4J Appender that writes log events into a MongoDB document oriented database. Log events are
  * fully parsed and stored as structured records in MongoDB (this appender does not require, nor use
  * a Log4J layout).
- * 
+ * <p>
  * The appender does <u>not</u> create any indexes on the data that's stored - it is assumed that if
  * query performance is required, those would be created externally (e.g., in the MongoDB shell or
  * other external application).
- * 
+ *
  * @author Peter Monks (pmonks@gmail.com)
- * @see <a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html">Log4J
- *      Appender Interface</a>
+ * @see <a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html">Log4J Appender
+ * Interface</a>
  * @see <a href="http://www.mongodb.org/">MongoDB</a>
  */
 public class MongoDbAppender extends BsonAppender {
-    private final static String DEFAULT_MONGO_DB_HOSTNAME = "localhost";
-    private final static String DEFAULT_MONGO_DB_PORT = "27017";
-    private final static String DEFAULT_MONGO_DB_DATABASE_NAME = "log4mongo";
-    private final static String DEFAULT_MONGO_DB_COLLECTION_NAME = "logevents";
-    private WriteConcern concern;
 
-    private String hostname = DEFAULT_MONGO_DB_HOSTNAME;
-    private String port = DEFAULT_MONGO_DB_PORT;
-    private String databaseName = DEFAULT_MONGO_DB_DATABASE_NAME;
-    private String collectionName = DEFAULT_MONGO_DB_COLLECTION_NAME;
-    private String userName = null;
-    private String password = null;
-    private String writeConcern = null;
-    private Mongo mongo = null;
-    private DBCollection collection = null;
+	private final static String DEFAULT_MONGO_DB_HOSTNAME = "localhost";
 
-    private boolean initialized = false;
+	private final static String DEFAULT_MONGO_DB_PORT = "27017";
 
-    /**
-     * @see org.apache.log4j.Appender#requiresLayout()
-     */
-    public boolean requiresLayout() {
-        return (false);
-    }
+	private final static String DEFAULT_MONGO_DB_DATABASE_NAME = "log4mongo";
 
-    /**
-     * @see org.apache.log4j.AppenderSkeleton#activateOptions()
-     */
-    @Override
-    public void activateOptions() {
-        try {
-            // Close previous connections if reactivating
-            if (mongo != null) {
-                close();
-            }
+	private final static String DEFAULT_MONGO_DB_COLLECTION_NAME = "logevents";
 
-            List<ServerAddress> addresses = getServerAddresses(hostname, port);
-            mongo = getMongo(addresses);
+	private WriteConcern concern;
 
-            DB database = getDatabase(mongo, databaseName);
+	private String hostname = DEFAULT_MONGO_DB_HOSTNAME;
 
-            if (userName != null && userName.trim().length() > 0) {
-                if (!database.authenticate(userName, password.toCharArray())) {
-                    throw new RuntimeException("Unable to authenticate with MongoDB server.");
-                }
+	private String port = DEFAULT_MONGO_DB_PORT;
 
-                // Allow password to be GCed
-                password = null;
-            }
+	private String databaseName = DEFAULT_MONGO_DB_DATABASE_NAME;
 
-            setCollection(database.getCollection(collectionName));
-            initialized = true;
-        } catch (Exception e) {
-            errorHandler.error("Unexpected exception while initialising MongoDbAppender.", e,
-                    ErrorCode.GENERIC_FAILURE);
-        }
-    }
-    
-    /*
-     * This method could be overridden to provide the DB instance from an existing connection.
-     */
-    protected DB getDatabase(Mongo mongo, String databaseName) {
-        return mongo.getDB(databaseName);
-    }
+	private String collectionName = DEFAULT_MONGO_DB_COLLECTION_NAME;
 
-    /*
-     * This method could be overridden to provide the Mongo instance from an existing connection.
-     */
-    protected Mongo getMongo(List<ServerAddress> addresses) {
-        if (addresses.size() < 2) {
-            return new Mongo(addresses.get(0));
-        } else {
-            // Replica set
-            return new Mongo(addresses);
-        }
-    }
-    
-    /**
-     * Note: this method is primarily intended for use by the unit tests.
-     * 
-     * @param collection
-     *            The MongoDB collection to use when logging events.
-     */
-    public void setCollection(final DBCollection collection) {
-        assert collection != null : "collection must not be null";
-        
-        this.collection = collection;
-    }
+	private String userName = null;
 
-    /**
-     * @see org.apache.log4j.Appender#close()
-     */
-    public void close() {
-        if (mongo != null) {
-            collection = null;
-            mongo.close();
-        }
-    }
+	private String password = null;
 
-    /**
-     * @return The hostname of the MongoDB server <i>(will not be null, empty or blank)</i>.
-     */
-    public String getHostname() {
-        return hostname;
-    }
+	private String writeConcern = null;
 
-    /**
-     * @param hostname
-     *            The MongoDB hostname to set <i>(must not be null, empty or blank)</i>.
-     */
-    public void setHostname(final String hostname) {
-        assert hostname != null : "hostname must not be null";
-        assert hostname.trim().length() > 0 : "hostname must not be empty or blank";
+	private MongoClient mongo = null;
 
-        this.hostname = hostname;
-    }
+	private MongoCollection collection = null;
 
-    /**
-     * @return The port of the MongoDB server <i>(will be > 0)</i>.
-     */
-    public String getPort() {
-        return port;
-    }
+	private boolean initialized = false;
 
-    /**
-     * @param port
-     *            The port to set <i>(must not be null, empty or blank)</i>.
-     */
-    public void setPort(final String port) {
-        assert port != null : "port must not be null";
-        assert port.trim().length() > 0 : "port must not be empty or blank";
+	/**
+	 * @see org.apache.log4j.Appender#requiresLayout()
+	 */
+	public boolean requiresLayout() {
+		return ( false );
+	}
 
-        this.port = port;
-    }
+	/**
+	 * @see org.apache.log4j.AppenderSkeleton#activateOptions()
+	 */
+	@Override
+	public void activateOptions() {
+		try {
+			// Close previous connections if reactivating
+			if ( mongo != null ) {
+				close();
+			}
 
-    /**
-     * @return The database used in the MongoDB server <i>(will not be null, empty or blank)</i>.
-     */
-    public String getDatabaseName() {
-        return databaseName;
-    }
+			MongoCredential credentials = null;
+			if ( userName != null && userName.trim().length() > 0 ) {
+				credentials = MongoCredential.createCredential( userName, databaseName, password.toCharArray() );
+				password = null;
+			}
 
-    /**
-     * @param databaseName
-     *            The database to use in the MongoDB server <i>(must not be null, empty or
-     *            blank)</i>.
-     */
-    public void setDatabaseName(final String databaseName) {
-        assert databaseName != null : "database must not be null";
-        assert databaseName.trim().length() > 0 : "database must not be empty or blank";
+			mongo = getMongo( getServerAddresses( hostname, port ), ( credentials != null ) ? Arrays.asList( credentials ) : null );
 
-        this.databaseName = databaseName;
-    }
+			MongoDatabase database = getDatabase( mongo, databaseName );
 
-    /**
-     * @return The collection used within the database in the MongoDB server <i>(will not be null,
-     *         empty or blank)</i>.
-     */
-    public String getCollectionName() {
-        return collectionName;
-    }
+			setCollection( database.getCollection( collectionName ) );
 
-    /**
-     * @param collectionName
-     *            The collection used within the database in the MongoDB server <i>(must not be
-     *            null, empty or blank)</i>.
-     */
-    public void setCollectionName(final String collectionName) {
-        assert collectionName != null : "collection must not be null";
-        assert collectionName.trim().length() > 0 : "collection must not be empty or blank";
+			initialized = true;
+		} catch ( Exception e ) {
+			errorHandler.error( "Unexpected exception while initialising MongoDbAppender.", e,
+					ErrorCode.GENERIC_FAILURE );
+		}
+	}
 
-        this.collectionName = collectionName;
-    }
+	/*
+	 * This method could be overridden to provide the DB instance from an existing connection.
+	 */
+	protected MongoDatabase getDatabase( MongoClient mongo, String databaseName ) {
+		return mongo.getDatabase( databaseName );
+	}
 
-    /**
-     * @return The userName used to authenticate with MongoDB <i>(may be null)</i>.
-     */
-    public String getUserName() {
-        return userName;
-    }
+	/*
+	 * This method could be overridden to provide the Mongo instance from an existing connection.
+	 */
+	protected MongoClient getMongo( List <ServerAddress> addresses ) {
+		if ( addresses.size() < 2 ) {
+			return new MongoClient( addresses.get( 0 ) );
+		} else {
+			// Replica set
+			return new MongoClient( addresses );
+		}
+	}
 
-    /**
-     * @param userName
-     *            The userName to use when authenticating with MongoDB <i>(may be null)</i>.
-     */
-    public void setUserName(final String userName) {
-        this.userName = userName;
-    }
+	private MongoClient getMongo( List <ServerAddress> addresses, List <MongoCredential> credentials ) {
+		if ( credentials == null ) {
+			return this.getMongo( addresses );
+		}
 
-    /**
-     * @param password
-     *            The password to use when authenticating with MongoDB <i>(may be null)</i>.
-     */
-    public void setPassword(final String password) {
-        this.password = password;
-    }
-    
-    /**
-     * @return the writeConcern setting for Mongo.
-     */
-    public String getWriteConcern() {
+		if ( addresses.size() < 2 ) {
+			return new MongoClient( addresses.get( 0 ), credentials );
+		} else {
+			// Replica set
+			return new MongoClient( addresses, credentials );
+		}
+	}
+
+	/**
+	 * Note: this method is primarily intended for use by the unit tests.
+	 *
+	 * @param collection The MongoDB collection to use when logging events.
+	 */
+	public void setCollection( final MongoCollection collection ) {
+		assert collection != null : "collection must not be null";
+
+		this.collection = collection;
+	}
+
+	/**
+	 * @see org.apache.log4j.Appender#close()
+	 */
+	public void close() {
+		if ( mongo != null ) {
+			collection = null;
+			mongo.close();
+		}
+	}
+
+	/**
+	 * @return The hostname of the MongoDB server <i>(will not be null, empty or blank)</i>.
+	 */
+	public String getHostname() {
+		return hostname;
+	}
+
+	/**
+	 * @param hostname The MongoDB hostname to set <i>(must not be null, empty or blank)</i>.
+	 */
+	public void setHostname( final String hostname ) {
+		assert hostname != null : "hostname must not be null";
+		assert hostname.trim().length() > 0 : "hostname must not be empty or blank";
+
+		this.hostname = hostname;
+	}
+
+	/**
+	 * @return The port of the MongoDB server <i>(will be > 0)</i>.
+	 */
+	public String getPort() {
+		return port;
+	}
+
+	/**
+	 * @param port The port to set <i>(must not be null, empty or blank)</i>.
+	 */
+	public void setPort( final String port ) {
+		assert port != null : "port must not be null";
+		assert port.trim().length() > 0 : "port must not be empty or blank";
+
+		this.port = port;
+	}
+
+	/**
+	 * @return The database used in the MongoDB server <i>(will not be null, empty or blank)</i>.
+	 */
+	public String getDatabaseName() {
+		return databaseName;
+	}
+
+	/**
+	 * @param databaseName The database to use in the MongoDB server <i>(must not be null, empty or blank)</i>.
+	 */
+	public void setDatabaseName( final String databaseName ) {
+		assert databaseName != null : "database must not be null";
+		assert databaseName.trim().length() > 0 : "database must not be empty or blank";
+
+		this.databaseName = databaseName;
+	}
+
+	/**
+	 * @return The collection used within the database in the MongoDB server <i>(will not be null, empty or blank)</i>.
+	 */
+	public String getCollectionName() {
+		return collectionName;
+	}
+
+	/**
+	 * @param collectionName The collection used within the database in the MongoDB server <i>(must not be null, empty
+	 *                       or blank)</i>.
+	 */
+	public void setCollectionName( final String collectionName ) {
+		assert collectionName != null : "collection must not be null";
+		assert collectionName.trim().length() > 0 : "collection must not be empty or blank";
+
+		this.collectionName = collectionName;
+	}
+
+	/**
+	 * @return The userName used to authenticate with MongoDB <i>(may be null)</i>.
+	 */
+	public String getUserName() {
+		return userName;
+	}
+
+	/**
+	 * @param userName The userName to use when authenticating with MongoDB <i>(may be null)</i>.
+	 */
+	public void setUserName( final String userName ) {
+		this.userName = userName;
+	}
+
+	/**
+	 * @param password The password to use when authenticating with MongoDB <i>(may be null)</i>.
+	 */
+	public void setPassword( final String password ) {
+		this.password = password;
+	}
+
+	/**
+	 * @return the writeConcern setting for Mongo.
+	 */
+	public String getWriteConcern() {
 		return writeConcern;
 	}
-    
-    /**
-     * @param writeConcern
-     * 				The WriteConcern setting for Mongo.<i>(may be null). If null, set to default of dbCollection's writeConcern.</i>
-     */
-    public void setWriteConcern(final String writeConcern) {
-    	this.writeConcern = writeConcern;
-		concern = WriteConcern.valueOf(writeConcern);
+
+	/**
+	 * @param writeConcern The WriteConcern setting for Mongo.<i>(may be null). If null, set to default of
+	 *                     dbCollection's writeConcern.</i>
+	 */
+	public void setWriteConcern( final String writeConcern ) {
+		this.writeConcern = writeConcern;
+		concern = WriteConcern.valueOf( writeConcern );
 	}
-    
-    public WriteConcern getConcern() {
-    	if (concern == null) {
-    		concern = getCollection().getWriteConcern();
-    	}
+
+	public WriteConcern getConcern() {
+		if ( concern == null ) {
+			concern = getCollection().getWriteConcern();
+		}
 		return concern;
 	}
 
-    /**
-     * @param bson
-     *            The BSON object to insert into a MongoDB database collection.
-     */
-    @Override
-    public void append(DBObject bson) {
-        if (initialized && bson != null) {
-            try {
-                getCollection().insert(bson, getConcern());
-            } catch (MongoException e) {
-                errorHandler.error("Failed to insert document to MongoDB", e,
-                        ErrorCode.WRITE_FAILURE);
-            }
-        }
-    }
+	/**
+	 * @param bson The BSON object to insert into a MongoDB database collection.
+	 */
+	@Override
+	public void append( BSONObject bson ) {
+		if ( initialized && bson != null ) {
+			try {
+				getCollection().insertOne( new Document( bson.toMap() ) );
+			} catch ( MongoException e ) {
+				errorHandler.error( "Failed to insert document to MongoDB", e,
+						ErrorCode.WRITE_FAILURE );
+			}
+		}
+	}
 
-    /**
-     * Returns true if appender was successfully initialized. If this method returns false, the
-     * appender should not attempt to log events.
-     * 
-     * @return true if appender was successfully initialized
-     */
-    public boolean isInitialized() {
-        return initialized;
-    }
+	/**
+	 * Returns true if appender was successfully initialized. If this method returns false, the
+	 * appender should not attempt to log events.
+	 *
+	 * @return true if appender was successfully initialized
+	 */
+	public boolean isInitialized() {
+		return initialized;
+	}
 
-    /**
-     * 
-     * @return The MongoDB collection to which events are logged.
-     */
-    protected DBCollection getCollection() {
-        return collection;
-    }
+	/**
+	 * @return The MongoDB collection to which events are logged.
+	 */
+	protected MongoCollection getCollection() {
+		if ( concern == null ) {
+			return collection;
+		}
 
-    /**
-     * Returns a List of ServerAddress objects for each host specified in the hostname property.
-     * Returns an empty list if configuration is detected to be invalid, e.g.:
-     * <ul>
-     * <li>Port property doesn't contain either one port or one port per host</li>
-     * <li>After parsing port property to integers, there isn't either one port or one port per host
-     * </li>
-     * </ul>
-     * 
-     * @param hostname
-     *            Blank space delimited hostnames
-     * @param port
-     *            Blank space delimited ports. Must specify one port for all hosts or a port per
-     *            host.
-     * @return List of ServerAddresses to connect to
-     */
-    private List<ServerAddress> getServerAddresses(String hostname, String port) {
-        List<ServerAddress> addresses = new ArrayList<ServerAddress>();
+		return collection.withWriteConcern( concern );
+	}
 
-        String[] hosts = hostname.split(" ");
-        String[] ports = port.split(" ");
+	/**
+	 * Returns a List of ServerAddress objects for each host specified in the hostname property.
+	 * Returns an empty list if configuration is detected to be invalid, e.g.:
+	 * <ul>
+	 * <li>Port property doesn't contain either one port or one port per host</li>
+	 * <li>After parsing port property to integers, there isn't either one port or one port per host
+	 * </li>
+	 * </ul>
+	 *
+	 * @param hostname Blank space delimited hostnames
+	 * @param port     Blank space delimited ports. Must specify one port for all hosts or a port per host.
+	 *
+	 * @return List of ServerAddresses to connect to
+	 */
+	private List <ServerAddress> getServerAddresses( String hostname, String port ) {
+		List <ServerAddress> addresses = new ArrayList <ServerAddress>();
 
-        if (ports.length != 1 && ports.length != hosts.length) {
-            errorHandler.error(
-                    "MongoDB appender port property must contain one port or a port per host",
-                    null, ErrorCode.ADDRESS_PARSE_FAILURE);
-        } else {
-            List<Integer> portNums = getPortNums(ports);
-            // Validate number of ports again after parsing
-            if (portNums.size() != 1 && portNums.size() != hosts.length) {
-                errorHandler
-                        .error("MongoDB appender port property must contain one port or a valid port per host",
-                                null, ErrorCode.ADDRESS_PARSE_FAILURE);
-            } else {
-                boolean onePort = (portNums.size() == 1);
+		String[] hosts = hostname.split( " " );
+		String[] ports = port.split( " " );
 
-                int i = 0;
-                for (String host : hosts) {
-                    int portNum = (onePort) ? portNums.get(0) : portNums.get(i);
-                    try {
-                        addresses.add(new ServerAddress(host.trim(), portNum));
-                    } catch (UnknownHostException e) {
-                        errorHandler.error(
-                                "MongoDB appender hostname property contains unknown host", e,
-                                ErrorCode.ADDRESS_PARSE_FAILURE);
-                    }
-                    i++;
-                }
-            }
-        }
-        return addresses;
-    }
+		if ( ports.length != 1 && ports.length != hosts.length ) {
+			errorHandler.error(
+					"MongoDB appender port property must contain one port or a port per host",
+					null, ErrorCode.ADDRESS_PARSE_FAILURE );
+		} else {
+			List <Integer> portNums = getPortNumbers( ports );
+			// Validate number of ports again after parsing
+			if ( portNums.size() != 1 && portNums.size() != hosts.length ) {
+				errorHandler
+						.error( "MongoDB appender port property must contain one port or a valid port per host",
+								null, ErrorCode.ADDRESS_PARSE_FAILURE );
+			} else {
+				boolean onePort = ( portNums.size() == 1 );
 
-    private List<Integer> getPortNums(String[] ports) {
-        List<Integer> portNums = new ArrayList<Integer>();
+				int i = 0;
+				for ( String host : hosts ) {
+					int portNum = ( onePort ) ? portNums.get( 0 ) : portNums.get( i );
+					addresses.add( new ServerAddress( host.trim(), portNum ) );
+					i++;
+				}
+			}
+		}
+		return addresses;
+	}
 
-        for (String port : ports) {
-            try {
-                Integer portNum = Integer.valueOf(port.trim());
-                if (portNum < 0) {
-                    errorHandler.error(
-                            "MongoDB appender port property can't contain a negative integer",
-                            null, ErrorCode.ADDRESS_PARSE_FAILURE);
-                } else {
-                    portNums.add(portNum);
-                }
-            } catch (NumberFormatException e) {
-                errorHandler.error(
-                        "MongoDB appender can't parse a port property value into an integer", e,
-                        ErrorCode.ADDRESS_PARSE_FAILURE);
-            }
+	private List <Integer> getPortNumbers( String[] ports ) {
+		List <Integer> portNumbers = new ArrayList <>();
 
-        }
+		for ( String port : ports ) {
+			try {
+				Integer portNum = Integer.valueOf( port.trim() );
+				if ( portNum < 0 ) {
+					errorHandler.error(
+							"MongoDB appender port property can't contain a negative integer",
+							null, ErrorCode.ADDRESS_PARSE_FAILURE );
+				} else {
+					portNumbers.add( portNum );
+				}
+			} catch ( NumberFormatException e ) {
+				errorHandler.error(
+						"MongoDB appender can't parse a port property value into an integer", e,
+						ErrorCode.ADDRESS_PARSE_FAILURE );
+			}
 
-        return portNums;
-    }
+		}
+
+		return portNumbers;
+	}
 
 }
