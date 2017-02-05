@@ -115,10 +115,10 @@ public class TestMongoDbAppenderHosts {
 	 */
 	@Test
 	public void testTwoHostsTwoPorts() throws Exception {
-		String        hostname = "technecium technecium";
+		String        hostname = "localhost localhost";
 		List <String> hosts    = Arrays.asList( "localhost", "localhost" );
-		String        port     = "27017 27017";
-		List <String> ports    = Arrays.asList( "27017", "27017" );
+		String        port     = "27017 27018";
+		List <String> ports    = Arrays.asList( "27017", "27018" );
 		PropertyConfigurator.configure( getNonDefaultPortProperties( hostname, port ) );
 
 		MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
