@@ -15,6 +15,11 @@
 
 package org.log4mongo.contrib;
 
+import org.apache.log4j.helpers.LogLog;
+import org.apache.log4j.helpers.PatternConverter;
+import org.apache.log4j.helpers.PatternParser;
+import org.apache.log4j.spi.LoggingEvent;
+
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -22,14 +27,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.helpers.LogLog;
-import org.apache.log4j.helpers.PatternConverter;
-import org.apache.log4j.helpers.PatternParser;
-import org.apache.log4j.spi.LoggingEvent;
-
 /**
- * PatternParser that adds pattern converters for logging useful
- * host-related info, specifically:
+ * PatternParser that adds pattern converters for logging useful host-related info, specifically:
  * <ul>
  * <li>hostname</li>
  * <li>VM name (which often includes the pid) of the JVM on this host</li>
@@ -37,10 +36,15 @@ import org.apache.log4j.spi.LoggingEvent;
  * </ul>
  */
 public class HostInfoPatternParser extends PatternParser {
+
     static final char HOST_NAME = 'H';
+
     static final char VM_NAME = 'V';
+
     static final char IP_ADDRESS = 'I';
+
     static final Map<String, PatternConverter> converters;
+
     static {
         Map<String, PatternConverter> tmp = new HashMap<String, PatternConverter>();
         tmp.put(String.valueOf(HOST_NAME), new HostPatternConverter());
@@ -55,12 +59,11 @@ public class HostInfoPatternParser extends PatternParser {
     }
 
     /**
-     * This method is called on each pattern converter character while the
-     * PatternParser superclass is parsing the pattern. If the character is for
-     * a custom converter handled by this PatternParser subclass, this class
-     * adds the appropriate converter to a LinkedList of converters. If not, it
-     * allows the superclass to handle the converter character.
-     * 
+     * This method is called on each pattern converter character while the PatternParser superclass
+     * is parsing the pattern. If the character is for a custom converter handled by this
+     * PatternParser subclass, this class adds the appropriate converter to a LinkedList of
+     * converters. If not, it allows the superclass to handle the converter character.
+     *
      * @see org.apache.log4j.helpers.PatternParser#finalizeConverter(char)
      */
     public void finalizeConverter(char formatChar) {
@@ -88,10 +91,10 @@ public class HostInfoPatternParser extends PatternParser {
     }
 
     /**
-     * Custom PatternConverter for replacing converter character 'H' with
-     * the host name.
+     * Custom PatternConverter for replacing converter character 'H' with the host name.
      */
     private static class HostPatternConverter extends PatternConverter {
+
         private String hostname = "";
 
         HostPatternConverter() {
@@ -110,10 +113,11 @@ public class HostInfoPatternParser extends PatternParser {
     }
 
     /**
-     * Custom PatternConverter for replacing converter character 'V' with
-     * the VM name of the JVM, usually formatted as pid@host.
+     * Custom PatternConverter for replacing converter character 'V' with the VM name of the JVM,
+     * usually formatted as pid@host.
      */
     private static class VMNamePatternConverter extends PatternConverter {
+
         private String process = "";
 
         VMNamePatternConverter() {
@@ -128,10 +132,10 @@ public class HostInfoPatternParser extends PatternParser {
     }
 
     /**
-     * Custom PatternConverter for replacing converter character 'I' with
-     * the IP Address.
+     * Custom PatternConverter for replacing converter character 'I' with the IP Address.
      */
     private static class IPAddressPatternConverter extends PatternConverter {
+
         private String ipaddress = "";
 
         IPAddressPatternConverter() {

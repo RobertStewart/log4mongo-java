@@ -18,7 +18,6 @@
 package org.log4mongo.contrib;
 
 import org.apache.log4j.helpers.PatternParser;
-
 import org.log4mongo.MongoDbPatternLayout;
 
 public class HostInfoPatternLayout extends MongoDbPatternLayout {
@@ -32,10 +31,11 @@ public class HostInfoPatternLayout extends MongoDbPatternLayout {
 
     public PatternParser createPatternParser(String pattern) {
         PatternParser parser;
-        if (pattern == null)
+        if (pattern == null) {
             parser = new HostInfoPatternParser(DEFAULT_CONVERSION_PATTERN);
-        else
+        } else {
             parser = new HostInfoPatternParser(pattern);
+        }
 
         return parser;
     }

@@ -17,6 +17,15 @@
 
 package org.log4mongo;
 
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import org.apache.log4j.helpers.LogLog;
+import org.apache.log4j.spi.LocationInfo;
+import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
+import org.bson.BSONObject;
+
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -25,15 +34,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.helpers.LogLog;
-import org.apache.log4j.spi.LocationInfo;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
-
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-
 /**
  * Default implementation class for creating a BSON representation of a Log4J LoggingEvent.
  */
@@ -41,28 +41,47 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
 
     // Main log event elements
     private static final String KEY_TIMESTAMP = "timestamp";
+
     private static final String KEY_LEVEL = "level";
+
     private static final String KEY_THREAD = "thread";
+
     private static final String KEY_MESSAGE = "message";
+
     private static final String KEY_LOGGER_NAME = "loggerName";
+
     // Source code location
     private static final String KEY_FILE_NAME = "fileName";
+
     private static final String KEY_METHOD = "method";
+
     private static final String KEY_LINE_NUMBER = "lineNumber";
+
     private static final String KEY_CLASS = "class";
+
     // Class info
     private static final String KEY_FQCN = "fullyQualifiedClassName";
+
     private static final String KEY_PACKAGE = "package";
+
     private static final String KEY_CLASS_NAME = "className";
+
     // Exceptions
     private static final String KEY_THROWABLES = "throwables";
+
     private static final String KEY_EXCEPTION_MESSAGE = "message";
+
     private static final String KEY_STACK_TRACE = "stackTrace";
+
     // Host and Process Info
     private static final String KEY_HOST = "host";
+
     private static final String KEY_PROCESS = "process";
+
     private static final String KEY_HOSTNAME = "name";
+
     private static final String KEY_IP = "ip";
+
     // MDC Properties
     private static final String KEY_MDC_PROPERTIES = "properties";
 
@@ -84,12 +103,13 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
 
     /**
      * BSONifies a single Log4J LoggingEvent object.
-     * 
+     *
      * @param loggingEvent
      *            The LoggingEvent object to BSONify <i>(may be null)</i>.
+     *
      * @return The BSONified equivalent of the LoggingEvent object <i>(may be null)</i>.
      */
-    public DBObject bsonify(final LoggingEvent loggingEvent) {
+    public BSONObject bsonify(final LoggingEvent loggingEvent) {
         DBObject result = null;
 
         if (loggingEvent != null) {
@@ -112,7 +132,7 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
 
     /**
      * Adds MDC Properties to the DBObject.
-     * 
+     *
      * @param bson
      *            The root DBObject
      * @param props
@@ -125,9 +145,8 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
             String key;
             // Copy MDC properties into document
             for (Map.Entry<Object, Object> entry : props.entrySet()) {
-                key = (entry.getKey().toString().contains("."))
-                        ? entry.getKey().toString().replaceAll("\\.", "_")
-                        : entry.getKey().toString();
+                key = (entry.getKey().toString().contains(".")) ? entry.getKey().toString()
+                        .replaceAll("\\.", "_") : entry.getKey().toString();
                 nullSafePut(mdcProperties, key, entry.getValue().toString());
             }
             bson.put(KEY_MDC_PROPERTIES, mdcProperties);
@@ -136,7 +155,7 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
 
     /**
      * Adds the LocationInfo object to an existing BSON object.
-     * 
+     *
      * @param bson
      *            The BSON object to add the location info to <i>(must not be null)</i>.
      * @param locationInfo
@@ -153,7 +172,7 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
 
     /**
      * Adds the ThrowableInformation object to an existing BSON object.
-     * 
+     *
      * @param bson
      *            The BSON object to add the throwable info to <i>(must not be null)</i>.
      * @param throwableInfo
@@ -183,7 +202,7 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
 
     /**
      * Adds the current process's host name, VM name and IP address
-     * 
+     *
      * @param bson
      *            A BSON object containing host name, VM name and IP address
      */
@@ -193,9 +212,10 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
 
     /**
      * BSONifies the given Throwable.
-     * 
+     *
      * @param throwable
      *            The throwable object to BSONify <i>(may be null)</i>.
+     *
      * @return The BSONified equivalent of the Throwable object <i>(may be null)</i>.
      */
     protected DBObject bsonifyThrowable(final Throwable throwable) {
@@ -213,9 +233,10 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
 
     /**
      * BSONifies the given stack trace.
-     * 
+     *
      * @param stackTrace
      *            The stack trace object to BSONify <i>(may be null)</i>.
+     *
      * @return The BSONified equivalent of the stack trace object <i>(may be null)</i>.
      */
     protected DBObject bsonifyStackTrace(final StackTraceElement[] stackTrace) {
@@ -238,9 +259,10 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
 
     /**
      * BSONifies the given stack trace element.
-     * 
+     *
      * @param element
      *            The stack trace element object to BSONify <i>(may be null)</i>.
+     *
      * @return The BSONified equivalent of the stack trace element object <i>(may be null)</i>.
      */
     protected DBObject bsonifyStackTraceElement(final StackTraceElement element) {
@@ -260,9 +282,10 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
 
     /**
      * BSONifies the given class name.
-     * 
+     *
      * @param className
      *            The class name to BSONify <i>(may be null)</i>.
+     *
      * @return The BSONified equivalent of the class name <i>(may be null)</i>.
      */
     @SuppressWarnings(value = "unchecked")
@@ -295,7 +318,7 @@ public class LoggingEventBsonifierImpl implements LoggingEventBsonifier {
     /**
      * Adds the given value to the given key, except if it's null (in which case this method does
      * nothing).
-     * 
+     *
      * @param bson
      *            The BSON object to add the key/value to <i>(must not be null)</i>.
      * @param key
