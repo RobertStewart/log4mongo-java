@@ -8,7 +8,7 @@
 	<packaging>jar</packaging>
 	<name>log4mongo-java</name>
 	<description>Log4J Appender for MongoDB</description>
-	<version>0.8.0</version>
+	<version>0.9.0</version>
 
 	<parent>
 		<groupId>org.sonatype.oss</groupId>

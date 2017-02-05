@@ -26,6 +26,7 @@ More details are at the [Project site](http://log4mongo.org/display/PUB/Log4mong
 * cskinfill
 * Mick Knutson
 * Jay Patel
+* Šimon Schierreich
 
 # Pre-requisites
 * JDK 1.8+
@@ -51,7 +52,7 @@ be used in production. The --noprealloc and --nojournal options are also to spee
 and should not generally be used in production.
     
         $ sudo mkdir -p /data/r{0,1,2}
-        $ sudo chown -r `whoami` /data
+        $ sudo chown -R `whoami` /data
         $ mongod --replSet foo --smallfiles --noprealloc --nojournal --port 27017 --dbpath /data/r0
         $ mongod --replSet foo --smallfiles --noprealloc --nojournal --port 27018 --dbpath /data/r1
         $ mongod --replSet foo --smallfiles --noprealloc --nojournal --port 27019 --dbpath /data/r2
