@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
 
-
 /**
  * JUnit unit tests for MongoDbAppender to verify proper behavior when setting the hostname and
  * property properties.
@@ -64,104 +63,104 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestMongoDbAppenderHosts {
 
-	private final static String TEST_MONGO_SERVER_HOSTNAME = "localhost";
+    private final static String TEST_MONGO_SERVER_HOSTNAME = "localhost";
 
-	private final static int    TEST_MONGO_SERVER_PORT     = 27017;
+    private final static int TEST_MONGO_SERVER_PORT = 27017;
 
-	private final static String TEST_DATABASE_NAME         = "log4mongotest";
+    private final static String TEST_DATABASE_NAME = "log4mongotest";
 
-	private final static String MONGODB_APPENDER_NAME = "MongoDB";
+    private final static String MONGODB_APPENDER_NAME = "MongoDB";
 
-	private final Privateer p = new Privateer();
+    private final Privateer p = new Privateer();
 
-	@Test
-	public void testOneHost() throws Exception {
-		String hostname = TEST_MONGO_SERVER_HOSTNAME;
-		PropertyConfigurator.configure( getDefaultPortProperties( hostname ) );
+    @Test
+    public void testOneHost() throws Exception {
+        String hostname = TEST_MONGO_SERVER_HOSTNAME;
+        PropertyConfigurator.configure(getDefaultPortProperties(hostname));
 
-		MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
-				MONGODB_APPENDER_NAME );
-		Mongo mongo = (Mongo) p.getField( appender, "mongo" );
-		assertTrue( mongo.getAddress() != null );
-		assertTrue( TEST_MONGO_SERVER_HOSTNAME.equals( mongo.getAddress().getHost() ) );
-		assertTrue( TEST_MONGO_SERVER_PORT == mongo.getAddress().getPort() );
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
+                MONGODB_APPENDER_NAME);
+        Mongo mongo = (Mongo) p.getField(appender, "mongo");
+        assertTrue(mongo.getAddress() != null);
+        assertTrue(TEST_MONGO_SERVER_HOSTNAME.equals(mongo.getAddress().getHost()));
+        assertTrue(TEST_MONGO_SERVER_PORT == mongo.getAddress().getPort());
 
-		appender.close();
-	}
+        appender.close();
+    }
 
-	@Test
-	public void testOneHostNonDefaultPort() throws Exception {
-		String hostname = TEST_MONGO_SERVER_HOSTNAME;
-		String port     = "27017";
-		int    portNum  = Integer.parseInt( port );
-		PropertyConfigurator.configure( getNonDefaultPortProperties( hostname, port ) );
+    @Test
+    public void testOneHostNonDefaultPort() throws Exception {
+        String hostname = TEST_MONGO_SERVER_HOSTNAME;
+        String port = "27017";
+        int portNum = Integer.parseInt(port);
+        PropertyConfigurator.configure(getNonDefaultPortProperties(hostname, port));
 
-		MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
-				MONGODB_APPENDER_NAME );
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
+                MONGODB_APPENDER_NAME);
 
-		Mongo mongo = (Mongo) p.getField( appender, "mongo" );
-		assertTrue( mongo.getAddress() != null );
-		assertTrue( TEST_MONGO_SERVER_HOSTNAME.equals( mongo.getAddress().getHost() ) );
-		assertTrue( portNum == mongo.getAddress().getPort() );
+        Mongo mongo = (Mongo) p.getField(appender, "mongo");
+        assertTrue(mongo.getAddress() != null);
+        assertTrue(TEST_MONGO_SERVER_HOSTNAME.equals(mongo.getAddress().getHost()));
+        assertTrue(portNum == mongo.getAddress().getPort());
 
-		appender.close();
-	}
+        appender.close();
+    }
 
-	/**
-	 * If this test is run without a mongod running on localhost port 27018, an error will be logged
-	 * to the console by the appender.
-	 *
-	 * @throws Exception
-	 */
-	@Test
-	public void testTwoHostsTwoPorts() throws Exception {
-		String        hostname = "localhost localhost";
-		List <String> hosts    = Arrays.asList( "localhost", "localhost" );
-		String        port     = "27017 27018";
-		List <String> ports    = Arrays.asList( "27017", "27018" );
-		PropertyConfigurator.configure( getNonDefaultPortProperties( hostname, port ) );
+    /**
+     * If this test is run without a mongod running on localhost port 27018, an error will be logged
+     * to the console by the appender.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testTwoHostsTwoPorts() throws Exception {
+        String hostname = "localhost localhost";
+        List<String> hosts = Arrays.asList("localhost", "localhost");
+        String port = "27017 27018";
+        List<String> ports = Arrays.asList("27017", "27018");
+        PropertyConfigurator.configure(getNonDefaultPortProperties(hostname, port));
 
-		MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
-				MONGODB_APPENDER_NAME );
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
+                MONGODB_APPENDER_NAME);
 
-		Mongo                mongo     = (Mongo) p.getField( appender, "mongo" );
-		List <ServerAddress> addresses = mongo.getAllAddress();
-		assertTrue( addresses != null );
-		for ( ServerAddress address : addresses ) {
-			boolean found = false;
-			int     i     = 0;
-			for ( String host : hosts ) {
-				if ( host.equals( address.getHost() ) ) {
-					String p = String.valueOf( address.getPort() );
-					if ( ports.get( i ).equals( p ) ) {
-						found = true;
-						break;
-					}
-				}
-				i++;
-			}
-			assertTrue( found );
-		}
+        Mongo mongo = (Mongo) p.getField(appender, "mongo");
+        List<ServerAddress> addresses = mongo.getAllAddress();
+        assertTrue(addresses != null);
+        for (ServerAddress address : addresses) {
+            boolean found = false;
+            int i = 0;
+            for (String host : hosts) {
+                if (host.equals(address.getHost())) {
+                    String p = String.valueOf(address.getPort());
+                    if (ports.get(i).equals(p)) {
+                        found = true;
+                        break;
+                    }
+                }
+                i++;
+            }
+            assertTrue(found);
+        }
 
-		appender.close();
-	}
+        appender.close();
+    }
 
-	private Properties getDefaultPortProperties( String hostname ) {
-		Properties props = new Properties();
-		props.put( "log4j.rootLogger", "DEBUG, MongoDB" );
-		props.put( "log4j.appender.MongoDB", "org.log4mongo.MongoDbAppender" );
-		props.put( "log4j.appender.MongoDB.databaseName", TEST_DATABASE_NAME );
-		props.put( "log4j.appender.MongoDB.hostname", hostname );
-		return props;
-	}
+    private Properties getDefaultPortProperties(String hostname) {
+        Properties props = new Properties();
+        props.put("log4j.rootLogger", "DEBUG, MongoDB");
+        props.put("log4j.appender.MongoDB", "org.log4mongo.MongoDbAppender");
+        props.put("log4j.appender.MongoDB.databaseName", TEST_DATABASE_NAME);
+        props.put("log4j.appender.MongoDB.hostname", hostname);
+        return props;
+    }
 
-	private Properties getNonDefaultPortProperties( String hostname, String port ) {
-		Properties props = new Properties();
-		props.put( "log4j.rootLogger", "DEBUG, MongoDB" );
-		props.put( "log4j.appender.MongoDB", "org.log4mongo.MongoDbAppender" );
-		props.put( "log4j.appender.MongoDB.databaseName", TEST_DATABASE_NAME );
-		props.put( "log4j.appender.MongoDB.hostname", hostname );
-		props.put( "log4j.appender.MongoDB.port", port );
-		return props;
-	}
+    private Properties getNonDefaultPortProperties(String hostname, String port) {
+        Properties props = new Properties();
+        props.put("log4j.rootLogger", "DEBUG, MongoDB");
+        props.put("log4j.appender.MongoDB", "org.log4mongo.MongoDbAppender");
+        props.put("log4j.appender.MongoDB.databaseName", TEST_DATABASE_NAME);
+        props.put("log4j.appender.MongoDB.hostname", hostname);
+        props.put("log4j.appender.MongoDB.port", port);
+        return props;
+    }
 }

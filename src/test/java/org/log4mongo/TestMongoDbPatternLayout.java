@@ -32,7 +32,6 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-
 /**
  * JUnit unit tests for PatternLayout style logging.
  * <p>
@@ -46,309 +45,309 @@ import static org.junit.Assert.assertNotNull;
  */
 public class TestMongoDbPatternLayout {
 
-	private static final Logger log = Logger.getLogger( TestMongoDbPatternLayout.class );
+    private static final Logger log = Logger.getLogger(TestMongoDbPatternLayout.class);
 
-	public static final  String TEST_MONGO_SERVER_HOSTNAME = "localhost";
+    public static final String TEST_MONGO_SERVER_HOSTNAME = "localhost";
 
-	public static final  int    TEST_MONGO_SERVER_PORT     = 27017;
+    public static final int TEST_MONGO_SERVER_PORT = 27017;
 
-	private static final String TEST_DATABASE_NAME         = "log4mongotest";
+    private static final String TEST_DATABASE_NAME = "log4mongotest";
 
-	private static final String TEST_COLLECTION_NAME       = "logeventslayout";
+    private static final String TEST_COLLECTION_NAME = "logeventslayout";
 
-	private static final String APPENDER_NAME = "MongoDBPatternLayout";
+    private static final String APPENDER_NAME = "MongoDBPatternLayout";
 
-	private final MongoClient     mongo;
+    private final MongoClient mongo;
 
-	private       MongoCollection collection;
+    private MongoCollection collection;
 
-	public TestMongoDbPatternLayout() throws Exception {
-		mongo = new MongoClient( TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT );
-	}
+    public TestMongoDbPatternLayout() throws Exception {
+        mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+    }
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		MongoClient mongo = new MongoClient( TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT );
-		mongo.dropDatabase( TEST_DATABASE_NAME );
-	}
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+        MongoClient mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        mongo.dropDatabase(TEST_DATABASE_NAME);
+    }
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		MongoClient mongo = new MongoClient( TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT );
-		mongo.dropDatabase( TEST_DATABASE_NAME );
-	}
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+        MongoClient mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        mongo.dropDatabase(TEST_DATABASE_NAME);
+    }
 
-	@Before
-	public void setUp() throws Exception {
-		// Ensure both the appender and the JUnit test use the same collection
-		// object - provides consistency across reads (JUnit) & writes (Log4J)
-		collection = mongo.getDatabase( TEST_DATABASE_NAME ).getCollection( TEST_COLLECTION_NAME );
-		collection.drop();
-	}
+    @Before
+    public void setUp() throws Exception {
+        // Ensure both the appender and the JUnit test use the same collection
+        // object - provides consistency across reads (JUnit) & writes (Log4J)
+        collection = mongo.getDatabase(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        collection.drop();
+    }
 
-	@Test
-	public void testValidPatternLayout() {
-		PropertyConfigurator.configure( getValidPatternLayoutProperties() );
+    @Test
+    public void testValidPatternLayout() {
+        PropertyConfigurator.configure(getValidPatternLayoutProperties());
 
-		MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
-				APPENDER_NAME );
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
+                APPENDER_NAME);
 
-		collection = mongo.getDatabase( TEST_DATABASE_NAME ).getCollection( TEST_COLLECTION_NAME );
-		appender.setCollection( collection );
+        collection = mongo.getDatabase(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        appender.setCollection(collection);
 
-		assertEquals( 0L, countLogEntries() );
-		log.warn( "Warn entry" );
-		assertEquals( 1L, countLogEntries() );
-		assertEquals( 1L, countLogEntriesAtLevel( "WARN" ) );
+        assertEquals(0L, countLogEntries());
+        log.warn("Warn entry");
+        assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("WARN"));
 
-		// verify log entry content
-		FindIterable <DBObject> entries = collection.find( DBObject.class );
-		for ( DBObject entry : entries ) {
-			assertNotNull( entry );
-			assertEquals( "WARN", entry.get( "level" ) );
-			assertEquals( "Warn entry", entry.get( "message" ) );
-			// This is the custom info. In the pattern, the field is named "extra".
-			assertEquals( "useful info", entry.get( "extra" ) );
-		}
-	}
+        // verify log entry content
+        FindIterable<DBObject> entries = collection.find(DBObject.class);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("WARN", entry.get("level"));
+            assertEquals("Warn entry", entry.get("message"));
+            // This is the custom info. In the pattern, the field is named "extra".
+            assertEquals("useful info", entry.get("extra"));
+        }
+    }
 
-	@Test
-	public void testQuotesInMessage() {
-		PropertyConfigurator.configure( getValidPatternLayoutProperties() );
+    @Test
+    public void testQuotesInMessage() {
+        PropertyConfigurator.configure(getValidPatternLayoutProperties());
 
-		MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
-				APPENDER_NAME );
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
+                APPENDER_NAME);
 
-		collection = mongo.getDatabase( TEST_DATABASE_NAME ).getCollection( TEST_COLLECTION_NAME );
-		appender.setCollection( collection );
+        collection = mongo.getDatabase(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        appender.setCollection(collection);
 
-		assertEquals( 0L, countLogEntries() );
-		String msg = "\"Quotes\" ' \"embedded\"";
-		log.warn( msg );
-		assertEquals( 1L, countLogEntries() );
-		assertEquals( 1L, countLogEntriesAtLevel( "WARN" ) );
+        assertEquals(0L, countLogEntries());
+        String msg = "\"Quotes\" ' \"embedded\"";
+        log.warn(msg);
+        assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("WARN"));
 
-		// verify log entry content
-		FindIterable <DBObject> entries = collection.find( DBObject.class );
-		for ( DBObject entry : entries ) {
-			assertNotNull( entry );
-			assertEquals( "WARN", entry.get( "level" ) );
-			assertEquals( msg, entry.get( "message" ) );
-		}
-	}
+        // verify log entry content
+        FindIterable<DBObject> entries = collection.find(DBObject.class);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("WARN", entry.get("level"));
+            assertEquals(msg, entry.get("message"));
+        }
+    }
 
-	@Test
-	public void testNestedDoc() {
-		PropertyConfigurator.configure( getNestedDocPatternLayoutProperties() );
+    @Test
+    public void testNestedDoc() {
+        PropertyConfigurator.configure(getNestedDocPatternLayoutProperties());
 
-		MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
-				APPENDER_NAME );
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
+                APPENDER_NAME);
 
-		collection = mongo.getDatabase( TEST_DATABASE_NAME ).getCollection( TEST_COLLECTION_NAME );
-		appender.setCollection( collection );
+        collection = mongo.getDatabase(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        appender.setCollection(collection);
 
-		assertEquals( 0L, countLogEntries() );
-		String msg = "Nested warning";
-		log.warn( msg );
-		assertEquals( 1L, countLogEntries() );
-		assertEquals( 1L, countLogEntriesAtLevel( "WARN" ) );
+        assertEquals(0L, countLogEntries());
+        String msg = "Nested warning";
+        log.warn(msg);
+        assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("WARN"));
 
-		// verify log entry content
-		FindIterable <DBObject> entries = collection.find( DBObject.class );
-		for ( DBObject entry : entries ) {
-			assertNotNull( entry );
-			assertEquals( "WARN", entry.get( "level" ) );
-			DBObject nestedDoc = (DBObject) entry.get( "nested" );
-			assertEquals( msg, nestedDoc.get( "message" ) );
-		}
-	}
+        // verify log entry content
+        FindIterable<DBObject> entries = collection.find(DBObject.class);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("WARN", entry.get("level"));
+            DBObject nestedDoc = (DBObject) entry.get("nested");
+            assertEquals(msg, nestedDoc.get("message"));
+        }
+    }
 
-	/**
-	 * Tests that the document stored in MongoDB has an array as a value if the conversion pattern
-	 * specifies an array as a value.
-	 */
-	@Test
-	public void testArrayValue() {
-		PropertyConfigurator.configure( getArrayPatternLayoutProperties() );
+    /**
+     * Tests that the document stored in MongoDB has an array as a value if the conversion pattern
+     * specifies an array as a value.
+     */
+    @Test
+    public void testArrayValue() {
+        PropertyConfigurator.configure(getArrayPatternLayoutProperties());
 
-		MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
-				APPENDER_NAME );
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
+                APPENDER_NAME);
 
-		collection = mongo.getDatabase( TEST_DATABASE_NAME ).getCollection( TEST_COLLECTION_NAME );
-		appender.setCollection( collection );
+        collection = mongo.getDatabase(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        appender.setCollection(collection);
 
-		assertEquals( 0L, countLogEntries() );
-		String msg = "Message in array";
-		log.warn( msg );
-		assertEquals( 1L, countLogEntries() );
-		assertEquals( 1L, countLogEntriesAtLevel( "WARN" ) );
+        assertEquals(0L, countLogEntries());
+        String msg = "Message in array";
+        log.warn(msg);
+        assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("WARN"));
 
-		// verify log entry content
-		FindIterable<DBObject> entries = collection.find(DBObject.class);
-		for ( DBObject entry : entries ) {
-			assertNotNull( entry );
-			assertEquals( "WARN", entry.get( "level" ) );
-			BasicDBList list = (BasicDBList) entry.get( "array" );
-			assertEquals( 2, list.size() );
-			assertEquals( this.getClass().getSimpleName(), list.get( 0 ) );
-			assertEquals( msg, list.get( 1 ) );
-		}
-	}
+        // verify log entry content
+        FindIterable<DBObject> entries = collection.find(DBObject.class);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("WARN", entry.get("level"));
+            BasicDBList list = (BasicDBList) entry.get("array");
+            assertEquals(2, list.size());
+            assertEquals(this.getClass().getSimpleName(), list.get(0));
+            assertEquals(msg, list.get(1));
+        }
+    }
 
-	@Test
-	public void testHostInfoPatternLayout() throws Exception {
-		PropertyConfigurator.configure( getHostInfoPatternLayoutProperties() );
+    @Test
+    public void testHostInfoPatternLayout() throws Exception {
+        PropertyConfigurator.configure(getHostInfoPatternLayoutProperties());
 
-		MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
-				APPENDER_NAME );
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
+                APPENDER_NAME);
 
-		collection = mongo.getDatabase( TEST_DATABASE_NAME ).getCollection( TEST_COLLECTION_NAME );
-		appender.setCollection( collection );
+        collection = mongo.getDatabase(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        appender.setCollection(collection);
 
-		assertEquals( 0L, countLogEntries() );
-		String msg = "Message in array";
-		log.warn( msg );
-		assertEquals( 1L, countLogEntries() );
-		assertEquals( 1L, countLogEntriesAtLevel( "WARN" ) );
+        assertEquals(0L, countLogEntries());
+        String msg = "Message in array";
+        log.warn(msg);
+        assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("WARN"));
 
-		// verify log entry content
-		FindIterable<DBObject> entries = collection.find(DBObject.class);
-		for ( DBObject entry : entries ) {
-			assertNotNull( entry );
-			assertEquals( "WARN", entry.get( "level" ) );
-			assertNotNull( entry.get( "host" ) );
-			DBObject hostinfo = (DBObject) entry.get( "host" );
-			assertNotNull( hostinfo.get( "name" ) );
-			assertNotNull( hostinfo.get( "ip_address" ) );
-			assertNotNull( hostinfo.get( "process" ) );
-			assertEquals( InetAddress.getLocalHost().getHostName(), hostinfo.get( "name" ) );
-			assertEquals( InetAddress.getLocalHost().getHostAddress(), hostinfo.get( "ip_address" ) );
-		}
-	}
+        // verify log entry content
+        FindIterable<DBObject> entries = collection.find(DBObject.class);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("WARN", entry.get("level"));
+            assertNotNull(entry.get("host"));
+            DBObject hostinfo = (DBObject) entry.get("host");
+            assertNotNull(hostinfo.get("name"));
+            assertNotNull(hostinfo.get("ip_address"));
+            assertNotNull(hostinfo.get("process"));
+            assertEquals(InetAddress.getLocalHost().getHostName(), hostinfo.get("name"));
+            assertEquals(InetAddress.getLocalHost().getHostAddress(), hostinfo.get("ip_address"));
+        }
+    }
 
-	@Test
-	public void testBackslashInMessage() {
-		PropertyConfigurator.configure( getValidPatternLayoutProperties() );
+    @Test
+    public void testBackslashInMessage() {
+        PropertyConfigurator.configure(getValidPatternLayoutProperties());
 
-		MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
-				APPENDER_NAME );
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
+                APPENDER_NAME);
 
-		collection = mongo.getDatabase( TEST_DATABASE_NAME ).getCollection( TEST_COLLECTION_NAME );
-		appender.setCollection( collection );
+        collection = mongo.getDatabase(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        appender.setCollection(collection);
 
-		assertEquals( 0L, countLogEntries() );
-		String msg = "c:\\users\\some_file\\";
-		log.warn( msg );
-		assertEquals( 1L, countLogEntries() );
-		assertEquals( 1L, countLogEntriesAtLevel( "WARN" ) );
+        assertEquals(0L, countLogEntries());
+        String msg = "c:\\users\\some_file\\";
+        log.warn(msg);
+        assertEquals(1L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("WARN"));
 
-		String msgDoubleBackslash = "c:\\\\users\\\\some_file\\\\";
-		log.info( msgDoubleBackslash );
-		assertEquals( 2L, countLogEntries() );
-		assertEquals( 1L, countLogEntriesAtLevel( "INFO" ) );
+        String msgDoubleBackslash = "c:\\\\users\\\\some_file\\\\";
+        log.info(msgDoubleBackslash);
+        assertEquals(2L, countLogEntries());
+        assertEquals(1L, countLogEntriesAtLevel("INFO"));
 
-		// verify log entry content
-		DBObject queryObj = new BasicDBObject();
-		queryObj.put( "level", "WARN" );
-		FindIterable<DBObject> entries = collection.find(DBObject.class).limit(1);
-		for ( DBObject entry : entries ) {
-			assertNotNull( entry );
-			assertEquals( "WARN", entry.get( "level" ) );
-			assertEquals( msg, entry.get( "message" ) );
-		}
+        // verify log entry content
+        DBObject queryObj = new BasicDBObject();
+        queryObj.put("level", "WARN");
+        FindIterable<DBObject> entries = collection.find(DBObject.class).limit(1);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("WARN", entry.get("level"));
+            assertEquals(msg, entry.get("message"));
+        }
 
-		queryObj = new BasicDBObject();
-		queryObj.put( "level", "INFO" );
-		entries = collection.find(DBObject.class).skip( 1 );
-		for ( DBObject entry : entries ) {
-			assertNotNull( entry );
-			assertEquals( "INFO", entry.get( "level" ) );
-			assertEquals( msgDoubleBackslash, entry.get( "message" ) );
-		}
-	}
+        queryObj = new BasicDBObject();
+        queryObj.put("level", "INFO");
+        entries = collection.find(DBObject.class).skip(1);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("INFO", entry.get("level"));
+            assertEquals(msgDoubleBackslash, entry.get("message"));
+        }
+    }
 
-	@Test
-	public void testPerformance() {
-		PropertyConfigurator.configure( getValidPatternLayoutProperties() );
+    @Test
+    public void testPerformance() {
+        PropertyConfigurator.configure(getValidPatternLayoutProperties());
 
-		MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
-				APPENDER_NAME );
+        MongoDbAppender appender = (MongoDbAppender) Logger.getRootLogger().getAppender(
+                APPENDER_NAME);
 
-		collection = mongo.getDatabase( TEST_DATABASE_NAME ).getCollection( TEST_COLLECTION_NAME );
-		appender.setCollection( collection );
+        collection = mongo.getDatabase(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        appender.setCollection(collection);
 
-		int  NUM_MESSAGES = 1000;
-		long now          = System.currentTimeMillis();
-		for ( int i = 0; i < NUM_MESSAGES; i++ ) {
-			log.warn( "Warn entry" );
-		}
-		long dur = System.currentTimeMillis() - now;
-		System.out.println( "Milliseconds for MongoDbPatternLayoutAppender to log " + NUM_MESSAGES
-				+ " messages:" + dur );
-		assertEquals( NUM_MESSAGES, countLogEntries() );
-	}
+        int NUM_MESSAGES = 1000;
+        long now = System.currentTimeMillis();
+        for (int i = 0; i < NUM_MESSAGES; i++) {
+            log.warn("Warn entry");
+        }
+        long dur = System.currentTimeMillis() - now;
+        System.out.println("Milliseconds for MongoDbPatternLayoutAppender to log " + NUM_MESSAGES
+                + " messages:" + dur);
+        assertEquals(NUM_MESSAGES, countLogEntries());
+    }
 
-	private long countLogEntries() {
-		return ( collection.count() );
-	}
+    private long countLogEntries() {
+        return (collection.count());
+    }
 
-	private long countLogEntriesAtLevel( final String level ) {
-		return ( countLogEntriesWhere( Document.parse( "{ 'level' : '" + level.toUpperCase() + "' }" ) ) );
-	}
+    private long countLogEntriesAtLevel(final String level) {
+        return (countLogEntriesWhere(Document.parse("{ 'level' : '" + level.toUpperCase() + "' }")));
+    }
 
-	private long countLogEntriesWhere( final Document whereClause ) {
-		return collection.count( whereClause );
-	}
+    private long countLogEntriesWhere(final Document whereClause) {
+        return collection.count(whereClause);
+    }
 
-	private Properties getValidPatternLayoutProperties() {
-		Properties props = new Properties();
-		props.put( "log4j.rootLogger", "DEBUG, MongoDBPatternLayout" );
-		props.put( "log4j.appender.MongoDBPatternLayout",
-				"org.log4mongo.MongoDbPatternLayoutAppender" );
-		props.put( "log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest" );
-		props.put( "log4j.appender.MongoDBPatternLayout.layout", "org.log4mongo.CustomPatternLayout" );
-		props.put(
-				"log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
-				"{\"extra\":\"%e\",\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"class\":\"%c{1}\",\"message\":\"%m\"}" );
-		return props;
-	}
+    private Properties getValidPatternLayoutProperties() {
+        Properties props = new Properties();
+        props.put("log4j.rootLogger", "DEBUG, MongoDBPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout",
+                "org.log4mongo.MongoDbPatternLayoutAppender");
+        props.put("log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest");
+        props.put("log4j.appender.MongoDBPatternLayout.layout", "org.log4mongo.CustomPatternLayout");
+        props.put(
+                "log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
+                "{\"extra\":\"%e\",\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"class\":\"%c{1}\",\"message\":\"%m\"}");
+        return props;
+    }
 
-	private Properties getNestedDocPatternLayoutProperties() {
-		Properties props = new Properties();
-		props.put( "log4j.rootLogger", "DEBUG, MongoDBPatternLayout" );
-		props.put( "log4j.appender.MongoDBPatternLayout",
-				"org.log4mongo.MongoDbPatternLayoutAppender" );
-		props.put( "log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest" );
-		props.put( "log4j.appender.MongoDBPatternLayout.layout", "org.log4mongo.CustomPatternLayout" );
-		props.put(
-				"log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
-				"{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"nested\":{\"class\":\"%c{1}\",\"message\":\"%m\"}}" );
-		return props;
-	}
+    private Properties getNestedDocPatternLayoutProperties() {
+        Properties props = new Properties();
+        props.put("log4j.rootLogger", "DEBUG, MongoDBPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout",
+                "org.log4mongo.MongoDbPatternLayoutAppender");
+        props.put("log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest");
+        props.put("log4j.appender.MongoDBPatternLayout.layout", "org.log4mongo.CustomPatternLayout");
+        props.put(
+                "log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
+                "{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"nested\":{\"class\":\"%c{1}\",\"message\":\"%m\"}}");
+        return props;
+    }
 
-	private Properties getArrayPatternLayoutProperties() {
-		Properties props = new Properties();
-		props.put( "log4j.rootLogger", "DEBUG, MongoDBPatternLayout" );
-		props.put( "log4j.appender.MongoDBPatternLayout",
-				"org.log4mongo.MongoDbPatternLayoutAppender" );
-		props.put( "log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest" );
-		props.put( "log4j.appender.MongoDBPatternLayout.layout", "org.log4mongo.CustomPatternLayout" );
-		props.put( "log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
-				"{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"array\":[\"%c{1}\",\"%m\"]}" );
-		return props;
-	}
+    private Properties getArrayPatternLayoutProperties() {
+        Properties props = new Properties();
+        props.put("log4j.rootLogger", "DEBUG, MongoDBPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout",
+                "org.log4mongo.MongoDbPatternLayoutAppender");
+        props.put("log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest");
+        props.put("log4j.appender.MongoDBPatternLayout.layout", "org.log4mongo.CustomPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
+                "{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"array\":[\"%c{1}\",\"%m\"]}");
+        return props;
+    }
 
-	private Properties getHostInfoPatternLayoutProperties() {
-		Properties props = new Properties();
-		props.put( "log4j.rootLogger", "DEBUG, MongoDBPatternLayout" );
-		props.put( "log4j.appender.MongoDBPatternLayout",
-				"org.log4mongo.MongoDbPatternLayoutAppender" );
-		props.put( "log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest" );
-		props.put( "log4j.appender.MongoDBPatternLayout.layout",
-				"org.log4mongo.contrib.HostInfoPatternLayout" );
-		props.put(
-				"log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
-				"{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"array\":[\"%c{1}\",\"%m\"],\"host\":{\"name\":\"%H\", \"process\":\"%V\", \"ip_address\":\"%I\"}}" );
-		return props;
-	}
+    private Properties getHostInfoPatternLayoutProperties() {
+        Properties props = new Properties();
+        props.put("log4j.rootLogger", "DEBUG, MongoDBPatternLayout");
+        props.put("log4j.appender.MongoDBPatternLayout",
+                "org.log4mongo.MongoDbPatternLayoutAppender");
+        props.put("log4j.appender.MongoDBPatternLayout.databaseName", "log4mongotest");
+        props.put("log4j.appender.MongoDBPatternLayout.layout",
+                "org.log4mongo.contrib.HostInfoPatternLayout");
+        props.put(
+                "log4j.appender.MongoDBPatternLayout.layout.ConversionPattern",
+                "{\"timestamp\":\"%d{yyyy-MM-dd'T'HH:mm:ss'Z'}\",\"level\":\"%p\",\"array\":[\"%c{1}\",\"%m\"],\"host\":{\"name\":\"%H\", \"process\":\"%V\", \"ip_address\":\"%I\"}}");
+        return props;
+    }
 }

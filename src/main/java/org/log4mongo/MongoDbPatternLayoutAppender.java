@@ -24,7 +24,6 @@ import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LoggingEvent;
 import org.bson.Document;
 
-
 /**
  * A Log4J Appender that uses a PatternLayout to write log events into a MongoDB database.
  * <p>
@@ -41,48 +40,49 @@ import org.bson.Document;
  * reporting application).
  *
  * @author Robert Stewart (robert@wombatnation.com)
- * @see <a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html">Log4J Appender
- * Interface</a>
+ * @see <a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html">Log4J
+ *      Appender Interface</a>
  * @see <a href="http://www.mongodb.org/">MongoDB</a>
  */
 public class MongoDbPatternLayoutAppender extends MongoDbAppender {
 
-	@Override
-	public boolean requiresLayout() {
-		return ( true );
-	}
+    @Override
+    public boolean requiresLayout() {
+        return (true);
+    }
 
-	/**
-	 * Inserts a BSON representation of a LoggingEvent into a MongoDB collection. A PatternLayout is
-	 * used to format a JSON document containing data available in the LoggingEvent and, optionally,
-	 * additional data returned by custom PatternConverters.
-	 * <p>
-	 * The format of the JSON document is specified in the .layout.ConversionPattern property.
-	 *
-	 * @param loggingEvent The LoggingEvent that will be formatted and stored in MongoDB
-	 */
-	@Override
-	protected void append( final LoggingEvent loggingEvent ) {
-		if ( isInitialized() ) {
-			DBObject bson = null;
-			String   json = layout.format( loggingEvent );
+    /**
+     * Inserts a BSON representation of a LoggingEvent into a MongoDB collection. A PatternLayout is
+     * used to format a JSON document containing data available in the LoggingEvent and, optionally,
+     * additional data returned by custom PatternConverters.
+     * <p>
+     * The format of the JSON document is specified in the .layout.ConversionPattern property.
+     *
+     * @param loggingEvent
+     *            The LoggingEvent that will be formatted and stored in MongoDB
+     */
+    @Override
+    protected void append(final LoggingEvent loggingEvent) {
+        if (isInitialized()) {
+            DBObject bson = null;
+            String json = layout.format(loggingEvent);
 
-			if ( json.length() > 0 ) {
-				Object obj = JSON.parse( json );
-				if ( obj instanceof DBObject ) {
-					bson = (DBObject) obj;
-				}
-			}
+            if (json.length() > 0) {
+                Object obj = JSON.parse(json);
+                if (obj instanceof DBObject) {
+                    bson = (DBObject) obj;
+                }
+            }
 
-			if ( bson != null ) {
-				try {
-					getCollection().insertOne( new Document( bson.toMap() ) );
-				} catch ( MongoException e ) {
-					errorHandler.error( "Failed to insert document to MongoDB", e,
-							ErrorCode.WRITE_FAILURE );
-				}
-			}
-		}
-	}
+            if (bson != null) {
+                try {
+                    getCollection().insertOne(new Document(bson.toMap()));
+                } catch (MongoException e) {
+                    errorHandler.error("Failed to insert document to MongoDB", e,
+                            ErrorCode.WRITE_FAILURE);
+                }
+            }
+        }
+    }
 
 }

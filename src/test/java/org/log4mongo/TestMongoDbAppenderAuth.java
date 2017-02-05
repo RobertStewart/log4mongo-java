@@ -21,7 +21,6 @@ import com.mongodb.client.MongoCollection;
 import org.apache.log4j.PropertyConfigurator;
 import org.junit.*;
 
-
 /**
  * Authentication-related JUnit unit tests for MongoDbAppender.
  * <p>
@@ -32,67 +31,67 @@ import org.junit.*;
  */
 public class TestMongoDbAppenderAuth {
 
-	private final static String TEST_MONGO_SERVER_HOSTNAME = "localhost";
+    private final static String TEST_MONGO_SERVER_HOSTNAME = "localhost";
 
-	private final static int TEST_MONGO_SERVER_PORT = 27017;
+    private final static int TEST_MONGO_SERVER_PORT = 27017;
 
-	private final static String TEST_DATABASE_NAME = "log4mongotestauth";
+    private final static String TEST_DATABASE_NAME = "log4mongotestauth";
 
-	private final static String TEST_COLLECTION_NAME = "logevents";
+    private final static String TEST_COLLECTION_NAME = "logevents";
 
-	private final static String LOG4J_AUTH_PROPS = "src/test/resources/log4j_auth.properties";
+    private final static String LOG4J_AUTH_PROPS = "src/test/resources/log4j_auth.properties";
 
-	private final static String username = "open";
+    private final static String username = "open";
 
-	private final static String password = "sesame";
+    private final static String password = "sesame";
 
-	private final MongoClient mongo;
+    private final MongoClient mongo;
 
-	private MongoCollection collection;
+    private MongoCollection collection;
 
-	public TestMongoDbAppenderAuth() throws Exception {
-		mongo = new MongoClient( TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT );
-	}
+    public TestMongoDbAppenderAuth() throws Exception {
+        mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+    }
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		MongoClient mongo = new MongoClient( TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT );
-		mongo.dropDatabase( TEST_DATABASE_NAME );
-	}
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+        MongoClient mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        mongo.dropDatabase(TEST_DATABASE_NAME);
+    }
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		MongoClient mongo = new MongoClient( TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT );
-		mongo.dropDatabase( TEST_DATABASE_NAME );
-	}
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+        MongoClient mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        mongo.dropDatabase(TEST_DATABASE_NAME);
+    }
 
-	@Before
-	public void setUp() throws Exception {
-		// Ensure both the appender and the JUnit test use the same
-		// collection object - provides consistency across reads (JUnit) &
-		// writes (Log4J)
-		collection = mongo.getDatabase( TEST_DATABASE_NAME ).getCollection( TEST_COLLECTION_NAME );
-		collection.drop();
+    @Before
+    public void setUp() throws Exception {
+        // Ensure both the appender and the JUnit test use the same
+        // collection object - provides consistency across reads (JUnit) &
+        // writes (Log4J)
+        collection = mongo.getDatabase(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        collection.drop();
 
-	}
+    }
 
-	/**
-	 * Catching the RuntimeException thrown when Log4J calls the MongoDbAppender activeOptions()
-	 * method isn't easy, since it is thrown in another thread.
-	 */
-	@Test( expected = RuntimeException.class )
-	@Ignore
-	public void testAppenderActivateNoAuth() {
-		PropertyConfigurator.configure( LOG4J_AUTH_PROPS );
-	}
+    /**
+     * Catching the RuntimeException thrown when Log4J calls the MongoDbAppender activeOptions()
+     * method isn't easy, since it is thrown in another thread.
+     */
+    @Test(expected = RuntimeException.class)
+    @Ignore
+    public void testAppenderActivateNoAuth() {
+        PropertyConfigurator.configure(LOG4J_AUTH_PROPS);
+    }
 
-	/**
-	 * Adds the user to the test database before activating the appender.
-	 */
-	@Test
-	public void testAppenderActivateWithAuth() {
-		mongo.getDB( TEST_DATABASE_NAME ).addUser( username, password.toCharArray() );
-		PropertyConfigurator.configure( LOG4J_AUTH_PROPS );
-	}
+    /**
+     * Adds the user to the test database before activating the appender.
+     */
+    @Test
+    public void testAppenderActivateWithAuth() {
+        mongo.getDB(TEST_DATABASE_NAME).addUser(username, password.toCharArray());
+        PropertyConfigurator.configure(LOG4J_AUTH_PROPS);
+    }
 
 }
