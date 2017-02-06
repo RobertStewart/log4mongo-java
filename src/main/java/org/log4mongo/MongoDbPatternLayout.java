@@ -28,13 +28,17 @@ import org.apache.log4j.spi.LoggingEvent;
  * Much of the PatternLayout functionality needed to be re-implemented, because double quotes and \
  * need to be escaped in the formatted String. The formatted String will later be parsed as a JSON
  * document, so quotes in the values must be escaped.
- * 
+ *
  * @author Robert Stewart (robert@wombatnation.com)
  */
 public class MongoDbPatternLayout extends PatternLayout {
+
     private StringBuffer buf = new StringBuffer(BUF_SIZE);
+
     private StringBuilder builder = new StringBuilder(BUF_SIZE);
+
     private String conversionPattern;
+
     private PatternConverter headConverter;
 
     public MongoDbPatternLayout() {
@@ -61,10 +65,11 @@ public class MongoDbPatternLayout extends PatternLayout {
     @Override
     public PatternParser createPatternParser(String pattern) {
         PatternParser parser;
-        if (pattern == null)
+        if (pattern == null) {
             parser = new PatternParser(DEFAULT_CONVERSION_PATTERN);
-        else
+        } else {
             parser = new PatternParser(pattern);
+        }
 
         return parser;
     }

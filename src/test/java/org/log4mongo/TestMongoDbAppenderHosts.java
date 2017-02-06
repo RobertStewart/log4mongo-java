@@ -16,31 +16,30 @@
 
 package org.log4mongo;
 
-import static org.junit.Assert.assertTrue;
+import com.mongodb.Mongo;
+import com.mongodb.ServerAddress;
+import com.wombatnation.privateer.Privateer;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.junit.Test;
-
-import com.mongodb.Mongo;
-import com.mongodb.ServerAddress;
-import com.wombatnation.privateer.Privateer;
+import static org.junit.Assert.assertTrue;
 
 /**
  * JUnit unit tests for MongoDbAppender to verify proper behavior when setting the hostname and
  * property properties.
- * 
+ * <p>
  * <b>Note:</b> these tests require that a MongoDB server is running, and (by default) assumes that
  * server is listening on the default port (27017) on localhost.
  * <p>
  * Unless a replica set is configured with mongod instances listening on ports 27017 and 27018,
  * errors will be logged. If a host is not listening on port 27018, testOneHostNonDefaultPort() will
  * fail with an error.
- * 
+ * <p>
  * To test on localhost with a replica set, do the following (either starting mongod instances in
  * separate terminals or start them with --fork):
  * <ul>
@@ -59,12 +58,15 @@ import com.wombatnation.privateer.Privateer;
  * </ul>
  * Since the unit tests create and drop databases several times, they run about twice as fast if
  * mongod is started with the --smallfiles argument.
- * 
+ *
  * @author Robert Stewart (robert@wombatnation.com)
  */
 public class TestMongoDbAppenderHosts {
+
     private final static String TEST_MONGO_SERVER_HOSTNAME = "localhost";
+
     private final static int TEST_MONGO_SERVER_PORT = 27017;
+
     private final static String TEST_DATABASE_NAME = "log4mongotest";
 
     private final static String MONGODB_APPENDER_NAME = "MongoDB";
@@ -89,7 +91,7 @@ public class TestMongoDbAppenderHosts {
     @Test
     public void testOneHostNonDefaultPort() throws Exception {
         String hostname = TEST_MONGO_SERVER_HOSTNAME;
-        String port = "27018";
+        String port = "27017";
         int portNum = Integer.parseInt(port);
         PropertyConfigurator.configure(getNonDefaultPortProperties(hostname, port));
 
@@ -107,7 +109,7 @@ public class TestMongoDbAppenderHosts {
     /**
      * If this test is run without a mongod running on localhost port 27018, an error will be logged
      * to the console by the appender.
-     * 
+     *
      * @throws Exception
      */
     @Test

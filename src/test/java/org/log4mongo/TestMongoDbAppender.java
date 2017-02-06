@@ -16,67 +16,67 @@
 
 package org.log4mongo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-
+import com.mongodb.*;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.junit.After;
+import org.bson.Document;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+
+import static org.junit.Assert.*;
 
 /**
  * JUnit unit tests for MongoDbAppender.
- * 
+ * <p>
  * Note: these tests require that a MongoDB server is running, and (by default) assumes that server
  * is listening on the default port (27017) on localhost.
- * 
+ *
  * @author Peter Monks (pmonks@gmail.com)
  */
 public class TestMongoDbAppender {
+
     private final static Logger log = Logger.getLogger(TestMongoDbAppender.class);
 
     private final static String TEST_MONGO_SERVER_HOSTNAME = "localhost";
+
     private final static int TEST_MONGO_SERVER_PORT = 27017;
+
     private final static String TEST_DATABASE_NAME = "log4mongotest";
+
     private final static String TEST_COLLECTION_NAME = "logevents";
 
     private final static String MONGODB_APPENDER_NAME = "MongoDB";
 
     private final static String LOG4J_PROPS = "src/test/resources/log4j.properties";
 
-    private final Mongo mongo;
+    private final MongoClient mongo;
+
     private final MongoDbAppender appender;
-    private DBCollection collection;
+
+    private MongoCollection collection;
 
     public TestMongoDbAppender() throws Exception {
         PropertyConfigurator.configure(LOG4J_PROPS);
-        mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
         appender = (MongoDbAppender) Logger.getRootLogger().getAppender(MONGODB_APPENDER_NAME);
     }
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        MongoClient mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
         mongo.dropDatabase(TEST_DATABASE_NAME);
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        Mongo mongo = new Mongo(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
+        MongoClient mongo = new MongoClient(TEST_MONGO_SERVER_HOSTNAME, TEST_MONGO_SERVER_PORT);
         mongo.dropDatabase(TEST_DATABASE_NAME);
     }
 
@@ -84,22 +84,17 @@ public class TestMongoDbAppender {
     public void setUp() throws Exception {
         // Ensure both the appender and the JUnit test use the same collection
         // object - provides consistency across reads (JUnit) & writes (Log4J)
-        collection = mongo.getDB(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
+        collection = mongo.getDatabase(TEST_DATABASE_NAME).getCollection(TEST_COLLECTION_NAME);
         collection.drop();
         appender.setCollection(collection);
 
-        mongo.getDB(TEST_DATABASE_NAME).requestStart();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mongo.getDB(TEST_DATABASE_NAME).requestDone();
     }
 
     @Test
     public void testInitialized() throws Exception {
-        if (!appender.isInitialized())
+        if (!appender.isInitialized()) {
             fail();
+        }
     }
 
     @Test
@@ -115,10 +110,12 @@ public class TestMongoDbAppender {
         assertEquals(0L, countLogEntriesAtLevel("fatal"));
 
         // verify log entry content
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertEquals("TRACE", entry.get("level"));
-        assertEquals("Trace entry", entry.get("message"));
+        FindIterable<DBObject> entries = collection.find(DBObject.class);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("TRACE", entry.get("level"));
+            assertEquals("Trace entry", entry.get("message"));
+        }
     }
 
     @Test
@@ -128,11 +125,13 @@ public class TestMongoDbAppender {
         assertEquals(1L, countLogEntries());
 
         // verify timestamp - presence and data type
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertTrue("Timestamp is not present in logged entry", entry.containsField("timestamp"));
-        assertTrue("Timestamp of logged entry is not stored as native date",
-                (entry.get("timestamp") instanceof java.util.Date));
+        FindIterable<DBObject> entries = collection.find(DBObject.class);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertTrue("Timestamp is not present in logged entry", entry.containsField("timestamp"));
+            assertTrue("Timestamp of logged entry is not stored as native date",
+                    (entry.get("timestamp") instanceof java.util.Date));
+        }
     }
 
     @Test
@@ -161,20 +160,23 @@ public class TestMongoDbAppender {
         assertEquals(1L, countLogEntriesAtLevel("error"));
 
         // verify log entry content
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertEquals("ERROR", entry.get("level"));
-        assertEquals("Error entry", entry.get("message"));
+        FindIterable<DBObject> entries = collection.find(DBObject.class);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("ERROR", entry.get("level"));
+            assertEquals("Error entry", entry.get("message"));
 
-        // verify throwable presence and content
-        assertTrue("Throwable is not present in logged entry", entry.containsField("throwables"));
-        BasicDBList throwables = (BasicDBList) entry.get("throwables");
-        assertEquals(1, throwables.size());
+            // verify throwable presence and content
+            assertTrue("Throwable is not present in logged entry",
+                    entry.containsField("throwables"));
+            BasicDBList throwables = (BasicDBList) entry.get("throwables");
+            assertEquals(1, throwables.size());
 
-        DBObject throwableEntry = (DBObject) throwables.get("0");
-        assertTrue("Throwable message is not present in logged entry",
-                throwableEntry.containsField("message"));
-        assertEquals("Here is an exception!", throwableEntry.get("message"));
+            DBObject throwableEntry = (DBObject) throwables.get("0");
+            assertTrue("Throwable message is not present in logged entry",
+                    throwableEntry.containsField("message"));
+            assertEquals("Here is an exception!", throwableEntry.get("message"));
+        }
     }
 
     @Test
@@ -187,25 +189,28 @@ public class TestMongoDbAppender {
         assertEquals(1L, countLogEntriesAtLevel("error"));
 
         // verify log entry content
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertEquals("ERROR", entry.get("level"));
-        assertEquals("Error entry", entry.get("message"));
+        FindIterable<DBObject> entries = collection.find(DBObject.class);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("ERROR", entry.get("level"));
+            assertEquals("Error entry", entry.get("message"));
 
-        // verify throwable presence and content
-        assertTrue("Throwable is not present in logged entry", entry.containsField("throwables"));
-        BasicDBList throwables = (BasicDBList) entry.get("throwables");
-        assertEquals(2, throwables.size());
+            // verify throwable presence and content
+            assertTrue("Throwable is not present in logged entry",
+                    entry.containsField("throwables"));
+            BasicDBList throwables = (BasicDBList) entry.get("throwables");
+            assertEquals(2, throwables.size());
 
-        DBObject rootEntry = (DBObject) throwables.get("0");
-        assertTrue("Throwable message is not present in logged entry",
-                rootEntry.containsField("message"));
-        assertEquals("I'm an innocent bystander.", rootEntry.get("message"));
+            DBObject rootEntry = (DBObject) throwables.get("0");
+            assertTrue("Throwable message is not present in logged entry",
+                    rootEntry.containsField("message"));
+            assertEquals("I'm an innocent bystander.", rootEntry.get("message"));
 
-        DBObject chainedEntry = (DBObject) throwables.get("1");
-        assertTrue("Throwable message is not present in logged entry",
-                chainedEntry.containsField("message"));
-        assertEquals("I'm the real culprit!", chainedEntry.get("message"));
+            DBObject chainedEntry = (DBObject) throwables.get("1");
+            assertTrue("Throwable message is not present in logged entry",
+                    chainedEntry.containsField("message"));
+            assertEquals("I'm the real culprit!", chainedEntry.get("message"));
+        }
     }
 
     @Test
@@ -216,10 +221,12 @@ public class TestMongoDbAppender {
         assertEquals(1L, countLogEntriesAtLevel("WARN"));
 
         // verify log entry content
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertEquals("WARN", entry.get("level"));
-        assertEquals("Quotes\" \"embedded", entry.get("message"));
+        FindIterable<DBObject> entries = collection.find(DBObject.class);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("WARN", entry.get("level"));
+            assertEquals("Quotes\" \"embedded", entry.get("message"));
+        }
     }
 
     @Test
@@ -244,14 +251,12 @@ public class TestMongoDbAppender {
 
         assertEquals(1, countLogEntries());
         assertEquals(1, countLogEntriesAtLevel("info"));
-        assertEquals(
-                1,
-                countLogEntriesWhere(BasicDBObjectBuilder.start()
-                        .add("loggerName.className", "TestMongoDbAppender").get()));
-        assertEquals(
-                1,
-                countLogEntriesWhere(BasicDBObjectBuilder.start()
-                        .add("class.className", "TestMongoDbAppender").get()));
+        assertEquals(1,
+                countLogEntriesWhere(Document
+                        .parse("{ 'loggerName.className' : 'TestMongoDbAppender' }")));
+        assertEquals(1,
+                countLogEntriesWhere(Document
+                        .parse("{ 'class.className' : 'TestMongoDbAppender' }")));
     }
 
     @Test
@@ -261,14 +266,11 @@ public class TestMongoDbAppender {
 
         assertEquals(1, countLogEntries());
         assertEquals(1, countLogEntriesAtLevel("info"));
-        assertEquals(
-                1,
-                countLogEntriesWhere(BasicDBObjectBuilder.start()
-                        .add("loggerName.className", "TestMongoDbAppender").get()));
-        assertEquals(
-                1,
-                countLogEntriesWhere(BasicDBObjectBuilder.start()
-                        .add("class.className", "WrappedLogger").get()));
+        assertEquals(1,
+                countLogEntriesWhere(Document
+                        .parse("{ 'loggerName.className' : 'TestMongoDbAppender' }")));
+        assertEquals(1,
+                countLogEntriesWhere(Document.parse("{ 'class.className' : 'WrappedLogger' }")));
     }
 
     @Test
@@ -279,15 +281,17 @@ public class TestMongoDbAppender {
         assertEquals(1L, countLogEntriesAtLevel("WARN"));
 
         // verify log entry content
-        DBObject entry = collection.findOne();
-        assertNotNull(entry);
-        assertEquals("WARN", entry.get("level"));
-        assertEquals("Testing hostinfo", entry.get("message"));
-        assertNotNull(entry.get("host"));
-        DBObject hostinfo = (DBObject) entry.get("host");
-        assertNotNull(hostinfo.get("process"));
-        assertEquals(InetAddress.getLocalHost().getHostName(), hostinfo.get("name"));
-        assertEquals(ManagementFactory.getRuntimeMXBean().getName(), hostinfo.get("process"));
+        FindIterable<DBObject> entries = collection.find(DBObject.class);
+        for (DBObject entry : entries) {
+            assertNotNull(entry);
+            assertEquals("WARN", entry.get("level"));
+            assertEquals("Testing hostinfo", entry.get("message"));
+            assertNotNull(entry.get("host"));
+            DBObject hostinfo = (DBObject) entry.get("host");
+            assertNotNull(hostinfo.get("process"));
+            assertEquals(InetAddress.getLocalHost().getHostName(), hostinfo.get("name"));
+            assertEquals(ManagementFactory.getRuntimeMXBean().getName(), hostinfo.get("process"));
+        }
     }
 
     @Test
@@ -303,15 +307,14 @@ public class TestMongoDbAppender {
     }
 
     private long countLogEntries() {
-        return (collection.getCount());
+        return (collection.count());
     }
 
     private long countLogEntriesAtLevel(final String level) {
-        return (countLogEntriesWhere(BasicDBObjectBuilder.start().add("level", level.toUpperCase())
-                .get()));
+        return (countLogEntriesWhere(Document.parse("{ 'level' : '" + level.toUpperCase() + "' }")));
     }
 
-    private long countLogEntriesWhere(final DBObject whereClause) {
-        return collection.getCount(whereClause);
+    private long countLogEntriesWhere(final Document whereClause) {
+        return collection.count(whereClause);
     }
 }

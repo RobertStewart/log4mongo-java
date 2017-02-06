@@ -17,50 +17,60 @@
 
 package org.log4mongo;
 
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.mongodb.*;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import org.apache.log4j.spi.ErrorCode;
+import org.bson.BSONObject;
+import org.bson.Document;
 
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
-import com.mongodb.MongoException;
-import com.mongodb.ServerAddress;
-import com.mongodb.WriteConcern;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Log4J Appender that writes log events into a MongoDB document oriented database. Log events are
  * fully parsed and stored as structured records in MongoDB (this appender does not require, nor use
  * a Log4J layout).
- * 
+ * <p>
  * The appender does <u>not</u> create any indexes on the data that's stored - it is assumed that if
  * query performance is required, those would be created externally (e.g., in the MongoDB shell or
  * other external application).
- * 
+ *
  * @author Peter Monks (pmonks@gmail.com)
  * @see <a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Appender.html">Log4J
  *      Appender Interface</a>
  * @see <a href="http://www.mongodb.org/">MongoDB</a>
  */
 public class MongoDbAppender extends BsonAppender {
+
     private final static String DEFAULT_MONGO_DB_HOSTNAME = "localhost";
+
     private final static String DEFAULT_MONGO_DB_PORT = "27017";
+
     private final static String DEFAULT_MONGO_DB_DATABASE_NAME = "log4mongo";
+
     private final static String DEFAULT_MONGO_DB_COLLECTION_NAME = "logevents";
+
     private WriteConcern concern;
 
     private String hostname = DEFAULT_MONGO_DB_HOSTNAME;
+
     private String port = DEFAULT_MONGO_DB_PORT;
+
     private String databaseName = DEFAULT_MONGO_DB_DATABASE_NAME;
+
     private String collectionName = DEFAULT_MONGO_DB_COLLECTION_NAME;
+
     private String userName = null;
+
     private String password = null;
+
     private String writeConcern = null;
-    private Mongo mongo = null;
-    private DBCollection collection = null;
+
+    private MongoClient mongo = null;
+
+    private MongoCollection collection = null;
 
     private boolean initialized = false;
 
@@ -82,56 +92,68 @@ public class MongoDbAppender extends BsonAppender {
                 close();
             }
 
-            List<ServerAddress> addresses = getServerAddresses(hostname, port);
-            mongo = getMongo(addresses);
-
-            DB database = getDatabase(mongo, databaseName);
-
+            MongoCredential credentials = null;
             if (userName != null && userName.trim().length() > 0) {
-                if (!database.authenticate(userName, password.toCharArray())) {
-                    throw new RuntimeException("Unable to authenticate with MongoDB server.");
-                }
-
-                // Allow password to be GCed
+                credentials = MongoCredential.createCredential(userName, databaseName,
+                        password.toCharArray());
                 password = null;
             }
 
+            mongo = getMongo(getServerAddresses(hostname, port),
+                    (credentials != null) ? Arrays.asList(credentials) : null);
+
+            MongoDatabase database = getDatabase(mongo, databaseName);
+
             setCollection(database.getCollection(collectionName));
+
             initialized = true;
         } catch (Exception e) {
             errorHandler.error("Unexpected exception while initialising MongoDbAppender.", e,
                     ErrorCode.GENERIC_FAILURE);
         }
     }
-    
+
     /*
      * This method could be overridden to provide the DB instance from an existing connection.
      */
-    protected DB getDatabase(Mongo mongo, String databaseName) {
-        return mongo.getDB(databaseName);
+    protected MongoDatabase getDatabase(MongoClient mongo, String databaseName) {
+        return mongo.getDatabase(databaseName);
     }
 
     /*
      * This method could be overridden to provide the Mongo instance from an existing connection.
      */
-    protected Mongo getMongo(List<ServerAddress> addresses) {
+    protected MongoClient getMongo(List<ServerAddress> addresses) {
         if (addresses.size() < 2) {
-            return new Mongo(addresses.get(0));
+            return new MongoClient(addresses.get(0));
         } else {
             // Replica set
-            return new Mongo(addresses);
+            return new MongoClient(addresses);
         }
     }
-    
+
+    private MongoClient getMongo(List<ServerAddress> addresses, List<MongoCredential> credentials) {
+        if (credentials == null) {
+            return this.getMongo(addresses);
+        }
+
+        if (addresses.size() < 2) {
+            return new MongoClient(addresses.get(0), credentials);
+        } else {
+            // Replica set
+            return new MongoClient(addresses, credentials);
+        }
+    }
+
     /**
      * Note: this method is primarily intended for use by the unit tests.
-     * 
+     *
      * @param collection
      *            The MongoDB collection to use when logging events.
      */
-    public void setCollection(final DBCollection collection) {
+    public void setCollection(final MongoCollection collection) {
         assert collection != null : "collection must not be null";
-        
+
         this.collection = collection;
     }
 
@@ -242,39 +264,40 @@ public class MongoDbAppender extends BsonAppender {
     public void setPassword(final String password) {
         this.password = password;
     }
-    
+
     /**
      * @return the writeConcern setting for Mongo.
      */
     public String getWriteConcern() {
-		return writeConcern;
-	}
-    
+        return writeConcern;
+    }
+
     /**
      * @param writeConcern
-     * 				The WriteConcern setting for Mongo.<i>(may be null). If null, set to default of dbCollection's writeConcern.</i>
+     *            The WriteConcern setting for Mongo.<i>(may be null). If null, set to default of
+     *            dbCollection's writeConcern.</i>
      */
     public void setWriteConcern(final String writeConcern) {
-    	this.writeConcern = writeConcern;
-		concern = WriteConcern.valueOf(writeConcern);
-	}
-    
+        this.writeConcern = writeConcern;
+        concern = WriteConcern.valueOf(writeConcern);
+    }
+
     public WriteConcern getConcern() {
-    	if (concern == null) {
-    		concern = getCollection().getWriteConcern();
-    	}
-		return concern;
-	}
+        if (concern == null) {
+            concern = getCollection().getWriteConcern();
+        }
+        return concern;
+    }
 
     /**
      * @param bson
      *            The BSON object to insert into a MongoDB database collection.
      */
     @Override
-    public void append(DBObject bson) {
+    public void append(BSONObject bson) {
         if (initialized && bson != null) {
             try {
-                getCollection().insert(bson, getConcern());
+                getCollection().insertOne(new Document(bson.toMap()));
             } catch (MongoException e) {
                 errorHandler.error("Failed to insert document to MongoDB", e,
                         ErrorCode.WRITE_FAILURE);
@@ -285,7 +308,7 @@ public class MongoDbAppender extends BsonAppender {
     /**
      * Returns true if appender was successfully initialized. If this method returns false, the
      * appender should not attempt to log events.
-     * 
+     *
      * @return true if appender was successfully initialized
      */
     public boolean isInitialized() {
@@ -293,11 +316,14 @@ public class MongoDbAppender extends BsonAppender {
     }
 
     /**
-     * 
      * @return The MongoDB collection to which events are logged.
      */
-    protected DBCollection getCollection() {
-        return collection;
+    protected MongoCollection getCollection() {
+        if (concern == null) {
+            return collection;
+        }
+
+        return collection.withWriteConcern(concern);
     }
 
     /**
@@ -308,12 +334,13 @@ public class MongoDbAppender extends BsonAppender {
      * <li>After parsing port property to integers, there isn't either one port or one port per host
      * </li>
      * </ul>
-     * 
+     *
      * @param hostname
      *            Blank space delimited hostnames
      * @param port
      *            Blank space delimited ports. Must specify one port for all hosts or a port per
      *            host.
+     *
      * @return List of ServerAddresses to connect to
      */
     private List<ServerAddress> getServerAddresses(String hostname, String port) {
@@ -327,7 +354,7 @@ public class MongoDbAppender extends BsonAppender {
                     "MongoDB appender port property must contain one port or a port per host",
                     null, ErrorCode.ADDRESS_PARSE_FAILURE);
         } else {
-            List<Integer> portNums = getPortNums(ports);
+            List<Integer> portNums = getPortNumbers(ports);
             // Validate number of ports again after parsing
             if (portNums.size() != 1 && portNums.size() != hosts.length) {
                 errorHandler
@@ -339,13 +366,7 @@ public class MongoDbAppender extends BsonAppender {
                 int i = 0;
                 for (String host : hosts) {
                     int portNum = (onePort) ? portNums.get(0) : portNums.get(i);
-                    try {
-                        addresses.add(new ServerAddress(host.trim(), portNum));
-                    } catch (UnknownHostException e) {
-                        errorHandler.error(
-                                "MongoDB appender hostname property contains unknown host", e,
-                                ErrorCode.ADDRESS_PARSE_FAILURE);
-                    }
+                    addresses.add(new ServerAddress(host.trim(), portNum));
                     i++;
                 }
             }
@@ -353,8 +374,8 @@ public class MongoDbAppender extends BsonAppender {
         return addresses;
     }
 
-    private List<Integer> getPortNums(String[] ports) {
-        List<Integer> portNums = new ArrayList<Integer>();
+    private List<Integer> getPortNumbers(String[] ports) {
+        List<Integer> portNumbers = new ArrayList<>();
 
         for (String port : ports) {
             try {
@@ -364,7 +385,7 @@ public class MongoDbAppender extends BsonAppender {
                             "MongoDB appender port property can't contain a negative integer",
                             null, ErrorCode.ADDRESS_PARSE_FAILURE);
                 } else {
-                    portNums.add(portNum);
+                    portNumbers.add(portNum);
                 }
             } catch (NumberFormatException e) {
                 errorHandler.error(
@@ -374,7 +395,7 @@ public class MongoDbAppender extends BsonAppender {
 
         }
 
-        return portNums;
+        return portNumbers;
     }
 
 }

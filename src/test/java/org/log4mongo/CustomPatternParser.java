@@ -26,6 +26,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * if the logging style is set to PatternLayout.
  */
 public class CustomPatternParser extends PatternParser {
+
     static final char EXTRA_CHAR = 'e';
 
     public CustomPatternParser(String pattern) {
@@ -37,7 +38,7 @@ public class CustomPatternParser extends PatternParser {
      * is parsing the pattern. If the character is for a custom converter handled by this
      * PatternParser subclass, this class adds the appropriate converter to a LinkedList of
      * converters. If not, it allows the superclass to handle the converter character.
-     * 
+     *
      * @see org.apache.log4j.helpers.PatternParser#finalizeConverter(char)
      */
     public void finalizeConverter(char formatChar) {
@@ -60,6 +61,7 @@ public class CustomPatternParser extends PatternParser {
      * ID or some other piece of meaningful info.
      */
     private class ExtraInfoPatternConverter extends PatternConverter {
+
         ExtraInfoPatternConverter(FormattingInfo formatInfo) {
             super(formatInfo);
         }
