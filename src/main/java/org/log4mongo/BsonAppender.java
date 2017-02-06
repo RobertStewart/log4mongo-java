@@ -26,7 +26,7 @@ import org.bson.BSONObject;
  * classes must implement append(DBObject) to store the BSON representation of a LoggingEvent.
  * <p>
  * An example BSON structure for a single log entry is as follows:
- * <p>
+ * </p>
  * 
  * <pre>
  * {
@@ -73,7 +73,7 @@ import org.bson.BSONObject;
  *                                                          "className"               : "NativeMethodAccessorImpl"
  *                                                        }
  *                                       },
- *                                       ... 8< ...
+ *                                       ...
  *                                     ]
  *                    },
  *                    {
@@ -89,7 +89,7 @@ import org.bson.BSONObject;
  *                                                     "className"               : "TestMongoDbAppender"
  *                                                   }
  *                                       },
- *                                       ... 8< ...
+ *                                       ...
  *                                     ]
  *                    }
  *                  ]

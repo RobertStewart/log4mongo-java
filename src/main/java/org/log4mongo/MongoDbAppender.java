@@ -186,7 +186,7 @@ public class MongoDbAppender extends BsonAppender {
     }
 
     /**
-     * @return The port of the MongoDB server <i>(will be > 0)</i>.
+     * @return The port of the MongoDB server <i>(will be greater than 0)</i>.
      */
     public String getPort() {
         return port;
