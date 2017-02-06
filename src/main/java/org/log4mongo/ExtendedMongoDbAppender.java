@@ -46,10 +46,11 @@ public class ExtendedMongoDbAppender extends MongoDbAppender {
     }
 
     /**
-     * This will handle spaces and empty values A = minus- & C=equals= & E==F For XML, must escape
-     * (&amp;)
+     * This will handle spaces and empty values A = minus- @amp; C=equals= @amp; E==F
+     * For XML, must escape the ampersand.
      *
      * @param rootLevelProperties
+     *          key=value list of elements to be added to the root level log
      */
     public void setRootLevelProperties(String rootLevelProperties) {
         for (String keyValue : rootLevelProperties.split(" *& *")) {
