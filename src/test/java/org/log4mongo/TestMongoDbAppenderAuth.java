@@ -15,11 +15,16 @@
 
 package org.log4mongo;
 
-import com.mongodb.Mongo;
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import org.apache.log4j.PropertyConfigurator;
+import org.bson.Document;
 import org.junit.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Authentication-related JUnit unit tests for MongoDbAppender.
@@ -90,7 +95,22 @@ public class TestMongoDbAppenderAuth {
      */
     @Test
     public void testAppenderActivateWithAuth() {
-        mongo.getDB(TEST_DATABASE_NAME).addUser(username, password.toCharArray());
+        Document result = null;
+        MongoDatabase db = mongo.getDatabase(TEST_DATABASE_NAME);
+        BasicDBObject getUsersInfoCommand = new BasicDBObject("usersInfo",
+                new BasicDBObject("user", username).append("db", TEST_DATABASE_NAME));
+        BasicDBObject dropUserCommand = new BasicDBObject("dropUser", username);
+        BasicDBObject createUserCommand = new BasicDBObject("createUser", username).append("pwd", password).append("roles",
+                            Collections.singletonList(new BasicDBObject("role", "dbOwner").append("db", TEST_DATABASE_NAME)));
+
+        // If test user exists from a previous run, drop it
+        result = db.runCommand(getUsersInfoCommand);
+        ArrayList users = (ArrayList) result.get("users");
+        if (!users.isEmpty()) {
+            db.runCommand(dropUserCommand);
+        }
+
+        db.runCommand(createUserCommand);
         PropertyConfigurator.configure(LOG4J_AUTH_PROPS);
     }
 
