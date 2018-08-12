@@ -1,6 +1,6 @@
 Log4mongo-java
 ================
-[Project site](http://log4mongo.org/display/PUB/Log4mongo+for+Java)
+[Project site](https://log4mongo.atlassian.net/wiki/display/LOG4MONGO/Log4mongo+for+Java)
 
 [Source code on GitHub](http://github.com/log4mongo/log4mongo-java)
 
@@ -13,14 +13,14 @@ MongoDB document oriented database [2].
 * MongoDbPatternLayoutAppender - Uses standard Log4J pattern layout, parser
     and converter classes to store a log message as a custom-formatted document
     
-More details are at the [Project site](http://log4mongo.org/display/PUB/Log4mongo+for+Java)
+More details are at the [Project site](https://log4mongo.atlassian.net/wiki/display/LOG4MONGO/Log4mongo+for+Java)
 
 # Authors
 * Peter Monks (pmonks@gmail.com)
 * Robert Stewart (robert@wombatnation.com)
 
 # Contributors
-* Jozef Sevcik (sevcik@styxys.com)
+* Jozef Sevcik (sevcik@codescale.net)
 * Zach Bailey (znbailey@gmail.com)
 * Gabriel Eisbruch (gabrieleisbruch@gmail.com)
 * cskinfill
