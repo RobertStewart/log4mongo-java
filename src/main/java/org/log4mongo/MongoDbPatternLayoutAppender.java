@@ -71,6 +71,11 @@ public class MongoDbPatternLayoutAppender extends MongoDbAppender {
                 Object obj = JSON.parse(json);
                 if (obj instanceof DBObject) {
                     bson = (DBObject) obj;
+                    String dateKey = getDateKey(layout);
+                    if(dateKey != null) {
+                        //saving time stamp as a date instead of string
+                        bson.put(dateKey, new Date(loggingEvent.getTimeStamp()));
+                    }
                 }
             }
 
@@ -83,6 +88,27 @@ public class MongoDbPatternLayoutAppender extends MongoDbAppender {
                 }
             }
         }
+    }
+    
+    /**
+     * this method returns the key of date which is mentioned in layout pattern
+     * @param layout
+     * @return
+     */
+    private String getDateKey(Layout layout){
+        String key = null;
+        String conversionPattern =((MongoDbPatternLayout)layout).getConversionPattern();
+        String[] splitPattern= conversionPattern.split(",");
+        for(String pattern : splitPattern) {
+            if(pattern.contains("%d")) {
+                key = pattern.split(":")[0];
+            }
+        }
+        if(key != null) {
+            key = key.replaceAll("\"|\"$", "");
+            key = key.replaceAll("\\{", "");
+        }
+        return key;
     }
 
 }
