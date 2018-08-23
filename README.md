@@ -27,11 +27,12 @@ More details are at the [Project site](https://log4mongo.atlassian.net/wiki/disp
 * Mick Knutson
 * Jay Patel
 * Šimon Schierreich
+* Pramod R
 
 # Pre-requisites
 * JDK 1.8+
-* MongoDB Server v3.0+ (tested with 3.4.1)
-* MongoDB Java Driver v3.0+ (tested with 3.4.1)
+* MongoDB Server v3.0+ (tested with 4.0.1)
+* MongoDB Java Driver v3.0+ (tested with 3.4.2)
 * Log4J 1.2+ (tested with 1.2.17 - note: tests won't work on earlier versions due to Log4J API changes)
 * Privateer (used only in unit tests - a copy is in the lib dir, in case you can't get it
 from the central Maven repo)
@@ -48,14 +49,14 @@ If you downloaded a pre-built jar file, skip step 4.
 1. Start local MongoDB servers running as a replica set. This is required for the replica set
 part of the unit tests. The --smallfiles arg makes the unit tests run about twice as fast,
 since databases are created and dropped several times, though it generally should not
-be used in production. The --noprealloc and --nojournal options are also to speed up tests
-and should not generally be used in production.
+be used in production. The --noprealloc option speeds up tests and should also not generally
+be used in production.
     
-        $ sudo mkdir -p /data/r{0,1,2}
-        $ sudo chown -R `whoami` /data
-        $ mongod --replSet foo --smallfiles --noprealloc --nojournal --port 27017 --dbpath /data/r0
-        $ mongod --replSet foo --smallfiles --noprealloc --nojournal --port 27018 --dbpath /data/r1
-        $ mongod --replSet foo --smallfiles --noprealloc --nojournal --port 27019 --dbpath /data/r2
+        $ sudo mkdir -p /var/data/r{0,1,2}
+        $ sudo chown -R `whoami` /var/data
+        $ mongod --replSet foo --smallfiles --noprealloc --port 27017 --dbpath /var/data/r0
+        $ mongod --replSet foo --smallfiles --noprealloc --port 27018 --dbpath /var/data/r1
+        $ mongod --replSet foo --smallfiles --noprealloc --port 27019 --dbpath /var/data/r2
     
 2. If this is the first time you have set up this replica set, you'll need to initiate it from the mongo shell:
 
