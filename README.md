@@ -10,8 +10,8 @@ MongoDB document oriented database [2].
 
 * MongoDbAppender - Stores a BSONified version of the Log4J LoggingEvent
 * ExtendedMongoDbAppender - Extends MongoDbAppender by allowing you to add top level elements
-* MongoDbPatternLayoutAppender - Uses standard Log4J pattern layout, parser
-    and converter classes to store a log message as a custom-formatted document
+* MongoDbPatternLayoutAppender - Uses standard Log4J pattern layout, parser and converter classes to store a log message as a custom-formatted document
+* MongoDbPatternLayoutAppender - Similar to MongoDbPatternLayoutAppender, but stores dates as ISODate objects rather than strings.
     
 More details are at the [Project site](https://log4mongo.atlassian.net/wiki/display/LOG4MONGO/Log4mongo+for+Java)
 
