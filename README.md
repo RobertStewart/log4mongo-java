@@ -1,8 +1,12 @@
 Log4mongo-java
 ================
+
 [Project site](https://log4mongo.atlassian.net/wiki/display/LOG4MONGO/Log4mongo+for+Java)
 
 [Source code on GitHub](http://github.com/log4mongo/log4mongo-java)
+
+# Security Warning
+Continued use of log4mongo-java is no longer recommended due to a security issue with log4j 1.x that will not be fixed. An upgrade to log4j 2.x is possible but is not planned by the current maintainers of log4mongo-java. Instead you should consider using the [Log4J MongoDB4 Appender](https://logging.apache.org/log4j/2.x/log4j-mongodb4/index.html).
 
 # Description
 This library provides Log4J Appenders [1] that write log events to the
